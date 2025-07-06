@@ -20,6 +20,8 @@ import {
   Table,
   Zap,
 } from 'lucide-react';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { dracula } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 interface LogEntry {
   id: string;
@@ -73,9 +75,9 @@ function CodeBlock({ snippet, onExecute }: { snippet: CodeSnippet; onExecute: ()
       </div>
       <div className="p-4">
         <p className="text-sm text-gray-600 mb-3">{snippet.description}</p>
-        <pre className="bg-gray-900 text-gray-100 p-3 rounded text-sm overflow-x-auto">
-          <code>{snippet.code}</code>
-        </pre>
+        <SyntaxHighlighter language="javascript" style={dracula} className="rounded text-sm overflow-x-auto">
+          {snippet.code}
+        </SyntaxHighlighter>
       </div>
     </div>
   );
