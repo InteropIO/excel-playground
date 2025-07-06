@@ -170,8 +170,8 @@ export class GlueExcelService {
             .then((args: ArgsType) => args.returned);
     }
 
-    subscribeDeltas(range: RangeInfo, dataTopLeft: string, subscriptionInfo: SubscriptionInfo): Promise<object> {
-        return this.io.interop.invoke(`${this.methodNs}SubscribeDeltas`, { range, dataTopLeft, subscriptionInfo })
+    subscribeDeltas(range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<object> {
+        return this.io.interop.invoke(`${this.methodNs}SubscribeDeltas`, { range, subscriptionInfo })
             .then((args: ArgsType) => args.returned);
     }
 
