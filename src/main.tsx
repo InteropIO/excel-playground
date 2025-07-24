@@ -7,7 +7,6 @@ import { IOConnectProvider } from "@interopio/react-hooks";
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
     <IOConnectProvider fallback={<h2>Loading...</h2>} settings={{
       desktop: {
         config: {},
@@ -17,5 +16,4 @@ createRoot(document.getElementById('root')!).render(
       {/* @ts-ignore */}
       <App />
     </IOConnectProvider>
-  </StrictMode>
 );

@@ -74,7 +74,6 @@ export enum ColumnType {
 }
 
 export interface DataSource {
-    file: string;
     name: string;
     table?: string;
     description?: string;
@@ -227,6 +226,9 @@ export class GlueExcelService {
     }
 
     readTableRows(range: RangeInfo, tableName: string, fromRow: number, rowsToRead?: number): Promise<object> {
+
+        //TODO: Default fromRow to 1
+        //TODO for stas check rowsToRead against the table size
         return this.io.interop.invoke(`${this.methodNs}ReadTableRows`, { range, tableName, fromRow, rowsToRead })
             .then((args: ArgsType) => args.returned);
     }

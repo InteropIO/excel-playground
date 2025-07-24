@@ -87,12 +87,12 @@ function App() {
   const [activeTab, setActiveTab] = useState<'database' | 'excel'>('database');
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
   const ioAPI = useContext(IOConnectContext);
 
 
   // Database service state
   const [dbDataSource, setDbDataSource] = useState<DataSource>({
-    file: 'interop.io/io.Connect Desktop/UserData/DEMO-INTEROP.IO/io.db',
     name: 'UserTable',
     columns: [
       { name: 'ID', type: ColumnType.Integer, pk: true, autoIncrement: true, nullable: false },
@@ -382,7 +382,6 @@ function App() {
       category: "Setup",
       description: "Initialize a database connection with a data source configuration",
       code: `const dataSource = {
-  file: '${dbDataSource.file}',
   name: '${dbDataSource.name}',
   columns: [
     { name: 'ID', type: ColumnType.Integer, pk: true, autoIncrement: true, nullable: false },
@@ -725,6 +724,13 @@ await xlService.applyStyles(range, '${backgroundColor}', '${foregroundColor}');`
     }
   };
 
+  const toggleCategory = (category: string) => {
+    setCollapsedCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Header */}
@@ -1053,25 +1059,45 @@ await xlService.applyStyles(range, '${backgroundColor}', '${foregroundColor}');`
                     {/* Excel Code Examples by Category */}
                     {Object.entries(groupedXlSnippets).map(([category, snippets]) => (
                       <div key={category} className="space-y-6">
-                        <div className="flex items-center space-x-2 mb-4">
-                          <div className="bg-blue-100 p-2 rounded-lg">
-                            {category === 'Basic' && <FileSpreadsheet className="w-5 h-5 text-blue-600" />}
-                            {category === 'Read/Write' && <Edit3 className="w-5 h-5 text-blue-600" />}
-                            {category === 'Subscriptions' && <Zap className="w-5 h-5 text-blue-600" />}
-                            {category === 'Tables' && <Table className="w-5 h-5 text-blue-600" />}
-                            {category === 'Menus' && <Menu className="w-5 h-5 text-blue-600" />}
-                            {category === 'Styling' && <Palette className="w-5 h-5 text-blue-600" />}
+                        <div 
+                          className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors"
+                          onClick={() => toggleCategory(category)}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <div className="bg-blue-100 p-2 rounded-lg">
+                              {category === 'Basic' && <FileSpreadsheet className="w-5 h-5 text-blue-600" />}
+                              {category === 'Read/Write' && <Edit3 className="w-5 h-5 text-blue-600" />}
+                              {category === 'Subscriptions' && <Zap className="w-5 h-5 text-blue-600" />}
+                              {category === 'Tables' && <Table className="w-5 h-5 text-blue-600" />}
+                              {category === 'Menus' && <Menu className="w-5 h-5 text-blue-600" />}
+                              {category === 'Styling' && <Palette className="w-5 h-5 text-blue-600" />}
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900">{category} Operations</h3>
+                            <span className="text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded">{snippets.length} methods</span>
                           </div>
-                          <h3 className="text-xl font-bold text-gray-900">{category} Operations</h3>
-                          <span className="text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded">{snippets.length} methods</span>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm text-gray-500">
+                              {collapsedCategories[category] ? 'Show' : 'Hide'}
+                            </span>
+                            <div className={`transform transition-transform duration-200 ${collapsedCategories[category] ? 'rotate-180' : ''}`}>
+                              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </div>
+                          </div>
                         </div>
-                        {snippets.map((snippet, index) => (
-                          <CodeBlock
-                            key={`${category}-${index}`}
-                            snippet={snippet}
-                            onExecute={() => executeExcelOperation(index, category)}
-                          />
-                        ))}
+                        
+                        {!collapsedCategories[category] && (
+                          <div className="space-y-6 pl-4">
+                            {snippets.map((snippet, index) => (
+                              <CodeBlock
+                                key={`${category}-${index}`}
+                                snippet={snippet}
+                                onExecute={() => executeExcelOperation(index, category)}
+                              />
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
