@@ -174,9 +174,23 @@ export class GlueExcelService {
             .then((args: ArgsType) => args.returned);
     }
 
-    subscribe(range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<object> {
+    subscribeRaw(range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<object> {
         return this.io.interop.invoke(`${this.methodNs}Subscribe`, { range, subscriptionInfo })
             .then((args: ArgsType) => args.returned);
+    }
+
+    subscribe(range: RangeInfo, callback: XlCallback): Promise<object> {
+        return this.subscribeRaw(
+            range, {
+            callbackEndpoint: this.xlServiceCallback
+        }
+        ).then((returned: any) => {
+            const subscriptionId = returned.subscriptionId;
+            if (subscriptionId) {
+                this.callbackMap.set(subscriptionId, callback);
+            }
+            return returned;
+        });
     }
 
     destroySubscription(subscriptionId: string): Promise<object> {

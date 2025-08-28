@@ -91,6 +91,7 @@ function App() {
   const ioAPI = useContext(IOConnectContext);
 
 
+
   // Database service state
   const [dbDataSource, setDbDataSource] = useState<DataSource>({
     name: 'UserTable',
@@ -131,6 +132,8 @@ function App() {
 
   const dbService = useRef(new GlueDBService(ioAPI));
   const xlService = useRef(new GlueExcelService(ioAPI));
+  (window as any).xlService = xlService.current;
+  (window as any).io = ioAPI
 
   const addLog = (type: LogEntry['type'], method: string, message: string, params?: any) => {
     const newLog: LogEntry = {
@@ -225,7 +228,7 @@ function App() {
 
   // Excel operations - Subscriptions
   const subscribeToRange = () => executeWithLogging('XL.Subscribe',
-    () => xlService.current.subscribe(
+    () => xlService.current.subscribeRaw(
       { workbook: workbookName, worksheet: worksheetName, range: rangeValue },
       { callbackEndpoint: 'xlServiceCxtMenuCallback' }
     ),
@@ -1059,7 +1062,7 @@ await xlService.applyStyles(range, '${backgroundColor}', '${foregroundColor}');`
                     {/* Excel Code Examples by Category */}
                     {Object.entries(groupedXlSnippets).map(([category, snippets]) => (
                       <div key={category} className="space-y-6">
-                        <div 
+                        <div
                           className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors"
                           onClick={() => toggleCategory(category)}
                         >
@@ -1086,7 +1089,7 @@ await xlService.applyStyles(range, '${backgroundColor}', '${foregroundColor}');`
                             </div>
                           </div>
                         </div>
-                        
+
                         {!collapsedCategories[category] && (
                           <div className="space-y-6 pl-4">
                             {snippets.map((snippet, index) => (
