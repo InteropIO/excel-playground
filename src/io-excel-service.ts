@@ -49,6 +49,42 @@ enum LifetimeType {
     ExcelSession = "ExcelSession"
 }
 
+interface CTPDescriptor {
+    id: string;
+    title: string;
+    visible?: boolean;
+    ui: UIDescriptor;
+}
+
+interface UIDescriptor {
+    type: UIType;
+    id?: string;
+    text?: string;
+    callback?: CallbackInfo;
+    children?: UIDescriptor[];
+    horizontalAlignment?: UIHorizontalAlignment;
+    verticalAlignment?: UIVerticalAlignment;
+    margin?: Thickness;
+    backColor?: string;
+    foreColor?: string;
+    isReadOnly?: boolean;
+}
+
+export type Thickness = { left: number; top: number; right: number; bottom: number };
+
+export type UIType = 'Panel' | 'Label' | 'TextBox' | 'Button' | 'ScrollBox';
+
+export type UIHorizontalAlignment = 'Left' | 'Center' | 'Right' | 'Stretch';
+export type UIVerticalAlignment = 'Top' | 'Center' | 'Bottom' | 'Stretch';
+
+export interface CallbackInfo {
+    callbackEndpoint: string;
+    callbackInstance?: string;
+    callbackApp?: string;
+    callbackId?: string;
+    targetType?: 'All' | 'Any';
+}
+
 interface SubscriptionInfo {
     callbackEndpoint?: string;
     callbackInstance?: string;
@@ -74,6 +110,7 @@ export enum ColumnType {
 }
 
 export interface DataSource {
+    file: string;
     name: string;
     table?: string;
     description?: string;
@@ -174,9 +211,21 @@ export class GlueExcelService {
             .then((args: ArgsType) => args.returned);
     }
 
-    subscribe(range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<object> {
+    subscribeRaw(range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<object> {
         return this.io.interop.invoke(`${this.methodNs}Subscribe`, { range, subscriptionInfo })
             .then((args: ArgsType) => args.returned);
+    }
+
+    subscribe(rangeInfo: RangeInfo, callback: XlCallback): Promise<object> {
+        return this.subscribeRaw(rangeInfo, {
+            callbackEndpoint: this.xlServiceCallback
+        }).then((returned: any) => {
+            const subscriptionId = returned.subscriptionId;
+            if (subscriptionId) {
+                this.callbackMap.set(subscriptionId, callback);
+            }
+            return returned;
+        });
     }
 
     destroySubscription(subscriptionId: string): Promise<object> {
@@ -293,9 +342,58 @@ export class GlueExcelService {
             .then((args: ArgsType) => args.returned);
     }
 
+    setRangeFormat(range: RangeInfo): Promise<object> {
+        return this.io.interop.invoke(`${this.methodNs}SetRangeFormat`, { range })
+            .then((args: ArgsType) => args.returned);
+    }
+
     createDynamicRibbonMenuRaw(caption: string, range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<object> {
         return this.io.interop.invoke(`${this.methodNs}CreateDynamicRibbonMenu`, { caption, range, subscriptionInfo })
             .then((args: ArgsType) => args.returned);
+    }
+
+    createOrUpdateCTPRaw(
+        range: RangeInfo,
+        ctpDescriptor: CTPDescriptor,
+        subscriptionInfo: SubscriptionInfo
+    ): Promise<any> {
+        return this.io.interop.invoke(`${this.methodNs}CreateOrUpdateCTP`, {
+            range,
+            ctpDescriptor,
+            subscriptionInfo
+        }).then((args: ArgsType) => args.returned.result);
+    }
+
+    createOrUpdateCTP(
+        range: RangeInfo,
+        ctpDescriptor: CTPDescriptor,
+        callback: XlCallback
+    ): Promise<object> {
+        const subscriptionInfo: SubscriptionInfo = {
+            callbackEndpoint: this.xlServiceCallback,
+            callbackId: ctpDescriptor.id
+        };
+
+        const overrideCallbackEndpoint = (ui: UIDescriptor) => {
+            if (ui.type === "Button" && !ui.callback?.callbackEndpoint) {
+                ui.callback = {
+                    ...ui.callback,
+                    callbackEndpoint: this.xlServiceCallback
+                };
+            }
+            ui.children?.forEach(overrideCallbackEndpoint);
+        };
+
+        overrideCallbackEndpoint(ctpDescriptor.ui);
+
+        return this.createOrUpdateCTPRaw(range, ctpDescriptor, subscriptionInfo)
+            .then(result => {
+                const id = ctpDescriptor.id;
+                if (id) {
+                    this.callbackMap.set(id, callback);
+                }
+                return result;
+            });
     }
 
     createDynamicRibbonMenu(
