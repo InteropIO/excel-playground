@@ -275,7 +275,7 @@ export class GlueExcelService {
         });
     }
 
-    createWorkbook(workbookFile: string, worksheet: string, saveConflictResolution: XlSaveConflictResolution): Promise<object> {
+    createWorkbook(workbookFile: string, worksheet: string, saveConflictResolution: XlSaveConflictResolution = XlSaveConflictResolution.xlUserResolution): Promise<object> {
         return this.io.interop.invoke(`${this.methodNs}CreateWorkbook`, { workbookFile, worksheet, saveConflictResolution })
             .then((args: ArgsType) => args.returned);
     }
