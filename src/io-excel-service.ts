@@ -198,6 +198,11 @@ export interface Column {
     defaultValue?: any;
 }
 
+export enum XlSaveConflictResolution {
+    xlUserResolution = "xlUserResolution",
+    xlLocalSessionChanges = "xlLocalSessionChanges",
+    xlOtherSessionChanges = "xlOtherSessionChanges"
+}
 
 type XlCallback = (origin: any, ...props: any[]) => void;
 type MenuArgs = { returned: { menu?: any; menuId?: string } };
@@ -270,8 +275,8 @@ export class GlueExcelService {
         });
     }
 
-    createWorkbook(workbookFile: string, worksheet: string): Promise<object> {
-        return this.io.interop.invoke(`${this.methodNs}CreateWorkbook`, { workbookFile, worksheet })
+    createWorkbook(workbookFile: string, worksheet: string, saveConflictResolution: XlSaveConflictResolution): Promise<object> {
+        return this.io.interop.invoke(`${this.methodNs}CreateWorkbook`, { workbookFile, worksheet, saveConflictResolution })
             .then((args: ArgsType) => args.returned);
     }
 
