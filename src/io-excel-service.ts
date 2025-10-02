@@ -42,6 +42,52 @@ interface TableColumnOp {
     Op: 'Add' | 'Delete' | 'Rename' | 'Update';
 }
 
+export interface ExcelServiceResult {
+    success?: boolean;
+    message?: string;
+
+    // Common properties
+    workbook?: string;
+    worksheet?: string;
+    address?: string;
+    subscriptionId?: string;
+
+    // Table-related properties
+    tableName?: string;
+    columns?: TableColumnInfo[];
+    rowsCount?: number;
+
+    // CTP-related properties
+    ctpHostId?: string;
+    ctpStore?: any;
+
+    // Menu-related properties
+    menuId?: string;
+    range?: RangeInfo;
+    caption?: string;
+    subscriptionInfo?: SubscriptionInfo;
+
+    // File operations
+    fileName?: string;
+
+    // Window properties
+    activeWindow?: string;
+
+    // Ribbon properties
+    customTabs?: XlRibbonObject[];
+    customRibbonDataLocation?: string;
+
+    // Data properties
+    data?: any;
+    menu?: any;
+}
+
+export interface TableColumnInfo {
+    name?: string;
+    address?: string;
+}
+
+
 enum LifetimeType {
     None = "None",
     GlueInstance = "GlueInstance",
@@ -72,7 +118,7 @@ interface UIDescriptor {
 
 export type Thickness = { left: number; top: number; right: number; bottom: number };
 
-export type UIType = 'Panel' | 'Label' | 'TextBox' | 'Button' | 'ScrollBox';
+export type UIType = 'Panel' | 'Label' | 'TextBox' | 'Button' | 'ScrollBox' | 'Border';
 
 export type UIHorizontalAlignment = 'Left' | 'Center' | 'Right' | 'Stretch';
 export type UIVerticalAlignment = 'Top' | 'Center' | 'Bottom' | 'Stretch';
