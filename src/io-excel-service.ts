@@ -213,10 +213,10 @@ export enum XlSaveConflictResolution {
     xlOtherSessionChanges = "xlOtherSessionChanges"
 }
 
-type XlCallback = (origin: any, ...props: any[]) => void;
-type MenuArgs = { returned: { menu?: any; menuId?: string } };
-type ArgsType = { returned: any };
-type TableArgs = { returned: { subscriptionId?: string } };
+export type XlCallback = (origin: any, ...props: any[]) => void;
+export type MenuArgs = { returned: { menu?: any; menuId?: string } };
+export type ArgsType = { returned: any };
+export type TableArgs = { returned: { subscriptionId?: string } };
 
 export class GlueDBService {
     private io: any;
