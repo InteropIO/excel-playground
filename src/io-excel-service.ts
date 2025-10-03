@@ -163,10 +163,19 @@ interface SubscriptionInfo {
     lifetime?: LifetimeType; // Optional, default handled externally
 }
 
-interface RangeInfo {
-    workbook: string;
-    worksheet: string;
-    range: string;
+export type DataOrientation = "Horizontal" | "Vertical";
+
+export interface RangeInfo {
+    workbook?: string;
+    worksheet?: string;
+    range?: string;
+
+    numberFormat?: string;
+    expandRange?: boolean;
+    resizeOrientation?: DataOrientation;
+
+    /** Ensure the workbook and worksheet exist. If they don't, they will be created. */
+    forceCreate?: boolean;
 }
 
 export enum ColumnType {
