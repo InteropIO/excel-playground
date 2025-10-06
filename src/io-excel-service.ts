@@ -276,10 +276,10 @@ export class GlueExcelService {
         this.callbackMap = new Map();
 
         this.io.interop.register(this.xlServiceCallback, (args: any) => {
-            const { origin, subscriptionId, ...otherProps } = args;
+            const { subscriptionId } = args;
             const callback = this.callbackMap.get(subscriptionId);
             if (callback) {
-                callback(origin, subscriptionId, ...Object.values(otherProps));
+                callback(args);
             }
         });
     }
