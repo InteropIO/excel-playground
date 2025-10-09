@@ -113,7 +113,7 @@ export interface TableColumnInfo {
 
 export enum LifetimeType {
     None = "None",
-    IOConnectInstance = "IOConnectInstance",
+    IOConnectInstance = "GlueInstance",
     Forever = "Forever",
     ExcelSession = "ExcelSession"
 }
