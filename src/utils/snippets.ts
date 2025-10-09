@@ -130,7 +130,7 @@ await xlService.write(range, '${state.cellValue}');`
       category: "Subscriptions",
       description: "Subscribe to changes in a specific Excel range",
       code: `const range = { workbook: '${state.workbookName}', worksheet: '${state.worksheetName}', range: '${state.rangeValue}' };
-const callback = (origin, subscriptionId, ...props) => console.log('Subscribe callback triggered', origin, subscriptionId, props);
+const callback = (origin, subscriptionId, ...props) => addLog('info', 'XL.SubscribeCallback', 'Subscribe callback triggered', { origin, subscriptionId, props });
 const result = await xlService.subscribe(range, callback);`
     },
     {
@@ -138,7 +138,7 @@ const result = await xlService.subscribe(range, callback);`
       category: "Subscriptions",
       description: "Subscribe to delta changes in a range with data top-left position",
       code: `const range = { workbook: '${state.workbookName}', worksheet: '${state.worksheetName}', range: '${state.rangeValue}' };
-const callback = (origin, subscriptionId, ...props) => console.log('Subscribe deltas callback triggered', origin, subscriptionId, props);
+const callback = (origin, subscriptionId, ...props) => addLog('info', 'XL.SubscribeDeltasCallback', 'Subscribe deltas callback triggered', { origin, subscriptionId, props });
 await xlService.subscribeDeltas(range, callback);`
     },
     {
@@ -164,7 +164,7 @@ await xlService.createTable(
   columns,
   data,
   (origin, subscriptionId, ...props) => {
-    console.log('Table callback triggered', origin, subscriptionId, props);
+    addLog('info', 'XL.TableCallback', 'Table callback triggered', { origin, subscriptionId, props });
   }
 );`
     },
@@ -229,7 +229,7 @@ await xlService.createContextMenu(
   ['io', 'actions'],
   range,
   (origin, subscriptionId, ...props) => {
-    console.log('Context menu clicked', origin, subscriptionId, props);
+    addLog('info', 'XL.ContextMenuCallback', 'Context menu clicked', { origin, subscriptionId, props });
   }
 );`
     },
@@ -263,7 +263,7 @@ await xlService.createDynamicRibbonMenu(
   '${state.ribbonMenuCaption}',
   range,
   (origin, subscriptionId, ...props) => {
-    console.log('Ribbon menu clicked', origin, subscriptionId, props);
+    addLog('info', 'XL.RibbonMenuCallback', 'Ribbon menu clicked', { origin, subscriptionId, props });
   }
 );`
     },

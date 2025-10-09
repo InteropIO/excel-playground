@@ -15,7 +15,7 @@ export function useExcelOperations() {
     console.log('Created new IOConnectXLService instance:', xlService.current);
   }
 
-  const createOperations = useCallback((state: ExcelState, dataSource: DataSource) => {
+  const createOperations = useCallback((state: ExcelState, dataSource: DataSource, addLog: any) => {
     const createRange = () => ({
       workbook: state.workbookName,
       worksheet: state.worksheetName,
@@ -53,13 +53,13 @@ export function useExcelOperations() {
       subscribeToRange: () =>
         xlService.current!.subscribe(
           createRange(),
-          (origin, subscriptionId, ...props) => console.log('Subscribe callback triggered', origin, subscriptionId, props)
+          (origin, subscriptionId, ...props) => addLog('info', 'XL.SubscribeCallback', 'Subscribe callback triggered', { origin, subscriptionId, props })
         ),
 
       subscribeDeltas: () =>
         xlService.current!.subscribeDeltas(
           createRange(),
-          (origin, subscriptionId, ...props) => console.log('Subscribe deltas callback triggered', origin, subscriptionId, props)
+          (origin, subscriptionId, ...props) => addLog('info', 'XL.SubscribeDeltasCallback', 'Subscribe deltas callback triggered', { origin, subscriptionId, props })
         ),
 
       destroySubscription: () =>
@@ -73,7 +73,7 @@ export function useExcelOperations() {
           'TableStyleMedium2',
           ['ID', 'Name', 'Email'],
           [['1', 'John Doe', 'john@example.com'], ['2', 'Jane Smith', 'jane@example.com']] as any,
-          (origin, subscriptionId, ...props) => console.log('Table callback triggered', origin, subscriptionId, props)
+          (origin, subscriptionId, ...props) => addLog('info', 'XL.TableCallback', 'Table callback triggered', { origin, subscriptionId, props })
         ),
 
       createLinkedTable: () =>
@@ -118,7 +118,7 @@ export function useExcelOperations() {
           state.contextMenuCaption,
           ['io', 'actions'],
           createRange(),
-          (origin, subscriptionId, ...props) => console.log('Context menu clicked', origin, subscriptionId, props)
+          (origin, subscriptionId, ...props) => addLog('info', 'XL.ContextMenuCallback', 'Context menu clicked', { origin, subscriptionId, props })
         ),
 
       createContextMenuRaw: () =>
@@ -136,7 +136,7 @@ export function useExcelOperations() {
         xlService.current!.createDynamicRibbonMenu(
           state.ribbonMenuCaption,
           createRange(),
-          (origin, subscriptionId, ...props) => console.log('Ribbon menu clicked', origin, subscriptionId, props)
+          (origin, subscriptionId, ...props) => addLog('info', 'XL.RibbonMenuCallback', 'Ribbon menu clicked', { origin, subscriptionId, props })
         ),
 
       createRibbonMenuRaw: () =>
