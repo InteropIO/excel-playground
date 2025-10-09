@@ -6,7 +6,6 @@ export function useLogging() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-
   const addLog = (type: LogEntry['type'], method: string, message: string, params?: any) => {
     const newLog: LogEntry = {
       id: Date.now().toString(),
@@ -23,14 +22,14 @@ export function useLogging() {
     setIsLoading(true);
     try {
       const result = await operation();
-      
+
       // Check if the result indicates an error even though the promise resolved
       if (result && typeof result.success === 'boolean' && !result.success) {
         const errorMessage = result.message || 'Operation failed';
         addLog('error', method, errorMessage, { params, result });
         return result;
       }
-      
+
       addLog('success', method, 'Operation completed successfully', { params, result });
       return result;
     } catch (error) {

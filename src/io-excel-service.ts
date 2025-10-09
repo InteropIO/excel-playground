@@ -3,46 +3,48 @@
 dataSource = {
     name: "UserTable",
     columns: [
-        { name: "ID", type: "Integer", pk: true, autoIncrement: true, nullable: false },
-        { name: "Name", type: "Text", pk: false, autoIncrement: false, nullable: false },
-        { name: "Email", type: "Text", pk: false, autoIncrement: false, nullable: true },
+        { name: "ID", type: "Integer", primaryKey: true, autoIncrement: true, nullable: false },
+        { name: "Name", type: "Text", primaryKey: false, autoIncrement: false, nullable: false },
+        { name: "Email", type: "Text", primaryKey: false, autoIncrement: false, nullable: true },
     ],
     primaryKey: ["ID"],
     data: [
         [null, "John Doe", "johndoe@example.com"],
         [null, "Jane Smith", "janesmith@example.com"],
         [null, "Sam Wilson", "samwilson@example.com"],
-    ],
+    ]
 };
-await glueDBService.init(dataSource);
-xlService.createLinkedTable({workbook: 'Book3', worksheet: 'Sheet1', range: 'C16', forceCreate: true}, dataSource, undefined).then(console.info)
+await ioConnectDBService.init(dataSource);
+xlService.createLinkedTable({workbook: "Book3", worksheet: "Sheet1", range: "C16", forceCreate: true}, dataSource, undefined).then(console.info);
 
 // loading
-glueDBService.init({name: "UserTable",
-    file: 'interop.io/io.Connect Desktop/UserData/DEMO-INTEROP.IO/io.db'}).then(console.info)
+ioConnectDBService.init({name: "UserTable",
+    file: "interop.io/io.Connect Desktop/UserData/DEMO-INTEROP.IO/io.db"}).then(console.info);
 
-// inserting 
+// inserting
 dataSource.data = [[null, "Mol Gad", "molgad@example.com"]]
-glueDBService.insertData(dataSource).then(console.info)
+ioConnectDBService.insertData(dataSource).then(console.info);
 
 // query
-await glueDBService.executeQuery(dataSource, 'select * from UserTable')
+await ioConnectDBService.executeQuery(dataSource, "select * from UserTable");
 
 // create context menu for any sheet, which works for A1:B5
-xlService.createContextMenu("send", ["io","actions"], {range: "A1:B5"}, console.info)
+xlService.createContextMenu("send", ["io","actions"], {range: "A1:B5"}, console.info);
 
 // create dynamic ribbon menu - add in a dropdown that can be executed from the ribbon
-xlService.createDynamicRibbonMenu('Another', {range: 'A1:B10'}, console.info)
+xlService.createDynamicRibbonMenu("Another", {range: "A1:B10"}, console.info);
 */
 
-interface TableColumnOp {
-    OldName: string;
-    Name: string;
-    Position: number | null;
-    Op: 'Add' | 'Delete' | 'Rename' | 'Update';
+export type TableColumnOperation = "Add" | "Delete" | "Rename" | "Update";
+
+export interface TableColumnOperationDescriptor {
+    currentName: string;
+    newName: string;
+    position: number | null;
+    operation: TableColumnOperation;
 }
 
-export enum XlRibbonObjectType {
+export enum ExcelRibbonObjectType {
     Button = "Button",
     DynamicMenu = "DynamicMenu",
     Separator = "Separator",
@@ -50,17 +52,15 @@ export enum XlRibbonObjectType {
     Tab = "Tab"
 }
 
-export interface XlRibbonObject {
+export interface ExcelRibbonObject {
     label?: string;
     image?: string;
     size?: string;
     tag?: string;
     callback?: SubscriptionInfo;
-    type: XlRibbonObjectType;
-    controls?: XlRibbonObject[];
-
+    type: ExcelRibbonObjectType;
+    controls?: ExcelRibbonObject[];
     id?: string;
-
     screenTip?: string;
     superTip?: string;
 }
@@ -97,7 +97,7 @@ export interface ExcelServiceResult {
     activeWindow?: string;
 
     // Ribbon properties
-    customTabs?: XlRibbonObject[];
+    customTabs?: ExcelRibbonObject[];
     customRibbonDataLocation?: string;
 
     // Data properties
@@ -111,21 +111,21 @@ export interface TableColumnInfo {
 }
 
 
-enum LifetimeType {
+export enum LifetimeType {
     None = "None",
-    GlueInstance = "GlueInstance",
+    IOConnectInstance = "IOConnectInstance",
     Forever = "Forever",
     ExcelSession = "ExcelSession"
 }
 
-interface CTPDescriptor {
+export interface CTPDescriptor {
     id: string;
     title: string;
     visible?: boolean;
     ui: UIDescriptor;
 }
 
-interface UIDescriptor {
+export interface UIDescriptor {
     type: UIType;
     id?: string;
     text?: string;
@@ -141,20 +141,20 @@ interface UIDescriptor {
 
 export type Thickness = { left: number; top: number; right: number; bottom: number };
 
-export type UIType = 'Panel' | 'Label' | 'TextBox' | 'Button' | 'ScrollBox' | 'Border';
+export type UIType = "Panel" | "Label" | "TextBox" | "Button" | "ScrollBox" | "Border";
 
-export type UIHorizontalAlignment = 'Left' | 'Center' | 'Right' | 'Stretch';
-export type UIVerticalAlignment = 'Top' | 'Center' | 'Bottom' | 'Stretch';
+export type UIHorizontalAlignment = "Left" | "Center" | "Right" | "Stretch";
+export type UIVerticalAlignment = "Top" | "Center" | "Bottom" | "Stretch";
 
 export interface CallbackInfo {
     callbackEndpoint: string;
     callbackInstance?: string;
     callbackApp?: string;
     callbackId?: string;
-    targetType?: 'All' | 'Any';
+    targetType?: "All" | "Any";
 }
 
-interface SubscriptionInfo {
+export interface SubscriptionInfo {
     callbackEndpoint?: string;
     callbackInstance?: string;
     callbackApp?: string;
@@ -199,7 +199,7 @@ export interface DataSource {
 }
 
 export interface Column {
-    pk: boolean;
+    primaryKey: boolean;
     autoIncrement: boolean;
     name: string;
     type: ColumnType;
@@ -207,18 +207,18 @@ export interface Column {
     defaultValue?: any;
 }
 
-export enum XlSaveConflictResolution {
-    xlUserResolution = "xlUserResolution",
-    xlLocalSessionChanges = "xlLocalSessionChanges",
-    xlOtherSessionChanges = "xlOtherSessionChanges"
+export enum ExcelSaveConflictResolution {
+    UserResolution = "xlUserResolution",
+    LocalSessionChanges = "xlLocalSessionChanges",
+    OtherSessionChanges = "xlOtherSessionChanges"
 }
 
-export type XlCallback = (origin: any, ...props: any[]) => void;
+export type ExcelCallback = (origin: any, ...props: any[]) => void;
 export type MenuArgs = { returned: { menu?: any; menuId?: string } };
 export type ArgsType = { returned: any };
 export type TableArgs = { returned: { subscriptionId?: string } };
 
-export class GlueDBService {
+export class IOConnectDBService {
     private io: any;
     private methodNs: string;
 
@@ -242,13 +242,13 @@ export class GlueDBService {
             .then((args: any) => args.returned);
     }
 
-    updateRow(dataSource: DataSource, rowData: object[], pkValue: any): Promise<object> {
-        return this.io.interop.invoke(`${this.methodNs}UpdateRow`, { dataSource, rowData, pkValue })
+    updateRow(dataSource: DataSource, rowData: object[], primaryKeyValue: any): Promise<object> {
+        return this.io.interop.invoke(`${this.methodNs}UpdateRow`, { dataSource, rowData, primaryKeyValue })
             .then((args: any) => args.returned);
     }
 
-    updateColumns(dataSource: DataSource, updates: Record<string, any>, pkValue: any): Promise<object> {
-        return this.io.interop.invoke(`${this.methodNs}UpdateColumns`, { dataSource, updates, pkValue })
+    updateColumns(dataSource: DataSource, updates: Record<string, any>, primaryKeyValue: any): Promise<object> {
+        return this.io.interop.invoke(`${this.methodNs}UpdateColumns`, { dataSource, updates, primaryKeyValue })
             .then((args: any) => args.returned);
     }
 
@@ -263,14 +263,14 @@ export class GlueDBService {
     }
 }
 
-export class GlueExcelService {
+export class IOConnectExcelService {
     private io: any;
     private methodNs: string;
-    private callbackMap: Map<string, XlCallback>;
+    private callbackMap: Map<string, ExcelCallback>;
 
-    private readonly xlServiceCallback = 'xlServiceCxtMenuCallback';
+    private readonly xlServiceCallback = "xlServiceCxtMenuCallback";
 
-    constructor(ioInstance: any, methodNs: string = 'T42.XL.') {
+    constructor(ioInstance: any, methodNs: string = "T42.XL.") {
         this.io = ioInstance;
         this.methodNs = methodNs;
         this.callbackMap = new Map();
@@ -280,18 +280,35 @@ export class GlueExcelService {
             const callback = this.callbackMap.get(subscriptionId);
             if (callback) {
                 callback(args);
+            } else {
+                console.log("Missing callback.")
             }
         });
     }
 
-    createWorkbook(workbookFile: string, worksheet: string, saveConflictResolution: XlSaveConflictResolution = XlSaveConflictResolution.xlUserResolution): Promise<object> {
+    createWorkbook(workbookFile: string, worksheet: string, saveConflictResolution: ExcelSaveConflictResolution = ExcelSaveConflictResolution.UserResolution): Promise<object> {
         return this.io.interop.invoke(`${this.methodNs}CreateWorkbook`, { workbookFile, worksheet, saveConflictResolution })
             .then((args: ArgsType) => args.returned);
     }
 
-    subscribeDeltas(range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<object> {
+    subscribeDeltasRaw(range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<object> {
         return this.io.interop.invoke(`${this.methodNs}SubscribeDeltas`, { range, subscriptionInfo })
             .then((args: ArgsType) => args.returned);
+    }
+
+    subscribeDeltas(rangeInfo: RangeInfo, callback: ExcelCallback): Promise<object> {
+        return this.subscribeDeltasRaw(rangeInfo, {
+            callbackEndpoint: this.xlServiceCallback
+        }).then((returned: any) => {
+            const subscriptionId = returned.subscriptionId;
+            if (subscriptionId) {
+                this.callbackMap.set(subscriptionId, callback);
+            } else {
+                console.log("No subscription ID.")
+            }
+
+            return returned;
+        });
     }
 
     subscribeRaw(range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<object> {
@@ -299,14 +316,17 @@ export class GlueExcelService {
             .then((args: ArgsType) => args.returned);
     }
 
-    subscribe(rangeInfo: RangeInfo, callback: XlCallback): Promise<object> {
+    subscribe(rangeInfo: RangeInfo, callback: ExcelCallback): Promise<object> {
         return this.subscribeRaw(rangeInfo, {
             callbackEndpoint: this.xlServiceCallback
         }).then((returned: any) => {
             const subscriptionId = returned.subscriptionId;
             if (subscriptionId) {
                 this.callbackMap.set(subscriptionId, callback);
+            } else {
+                console.log("No subscription ID.")
             }
+
             return returned;
         });
     }
@@ -327,7 +347,7 @@ export class GlueExcelService {
     }
 
     createTable(range: RangeInfo, tableName: string, tableStyle: string, columns: string[], value: object[][],
-        callback: XlCallback): Promise<object> {
+        callback: ExcelCallback): Promise<object> {
         return this.io.interop.invoke(`${this.methodNs}CreateTable`, {
             range, tableName, tableStyle, columns, value, subscriptionInfo: {
                 callbackEndpoint: this.xlServiceCallback
@@ -365,8 +385,8 @@ export class GlueExcelService {
             .then((args: ArgsType) => args.returned);
     }
 
-    updateTableColumns(range: RangeInfo, tableName: string, columnOps: TableColumnOp[]): Promise<object> {
-        return this.io.interop.invoke(`${this.methodNs}UpdateTableColumns`, { range, tableName, columnOps })
+    updateTableColumns(range: RangeInfo, tableName: string, columnOperations: TableColumnOperationDescriptor[]): Promise<object> {
+        return this.io.interop.invoke(`${this.methodNs}UpdateTableColumns`, { range, tableName, columnOperations })
             .then((args: ArgsType) => args.returned);
     }
 
@@ -375,12 +395,12 @@ export class GlueExcelService {
             .then((args: ArgsType) => args.returned);
     }
 
-    readXlRef(reference: string): Promise<object> {
+    readExcelRef(reference: string): Promise<object> {
         return this.io.interop.invoke(`${this.methodNs}ReadXlRef`, { reference })
             .then((args: ArgsType) => args.returned);
     }
 
-    writeXlRef(reference: string, value: object): Promise<object> {
+    writeExcelRef(reference: string, value: object): Promise<object> {
         return this.io.interop.invoke(`${this.methodNs}WriteXlRef`, { reference, value })
             .then((args: ArgsType) => args.returned);
     }
@@ -450,7 +470,7 @@ export class GlueExcelService {
     createOrUpdateCTP(
         range: RangeInfo,
         ctpDescriptor: CTPDescriptor,
-        callback: XlCallback
+        callback: ExcelCallback
     ): Promise<object> {
         const subscriptionInfo: SubscriptionInfo = {
             callbackEndpoint: this.xlServiceCallback,
@@ -482,7 +502,7 @@ export class GlueExcelService {
     createDynamicRibbonMenu(
         caption: string,
         range: RangeInfo,
-        callback: XlCallback,
+        callback: ExcelCallback,
     ): Promise<object> {
         return this.io.interop.invoke(`${this.methodNs}CreateDynamicRibbonMenu`, {
             caption, range, subscriptionInfo: {
@@ -516,7 +536,7 @@ export class GlueExcelService {
         caption: string,
         menuPath: string[],
         range: RangeInfo,
-        callback: XlCallback,
+        callback: ExcelCallback,
     ): Promise<object> {
         return this.io.interop.invoke(`${this.methodNs}CreateContextMenu`, {
             caption, menuPath, range, subscriptionInfo: {

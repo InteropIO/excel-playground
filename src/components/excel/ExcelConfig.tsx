@@ -17,7 +17,7 @@ export function ExcelConfig({ state, onStateChange }: ExcelConfigProps) {
         <Settings className="w-4 h-4 mr-2" />
         Excel Configuration
       </h3>
-      
+
       {/* Primary Configuration - Always Visible */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-3">
         <div>
@@ -84,7 +84,7 @@ export function ExcelConfig({ state, onStateChange }: ExcelConfigProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </summary>
-        
+
         <div className="mt-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Excel Ref</label>

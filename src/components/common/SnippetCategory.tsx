@@ -10,12 +10,12 @@ interface SnippetCategoryProps {
   onExecuteSnippet: (index: number) => void;
 }
 
-export function SnippetCategory({ 
-  category, 
-  snippets, 
-  isCollapsed, 
-  onToggle, 
-  onExecuteSnippet 
+export function SnippetCategory({
+  category,
+  snippets,
+  isCollapsed,
+  onToggle,
+  onExecuteSnippet
 }: SnippetCategoryProps) {
   const getCategoryIcon = () => {
     switch (category) {
@@ -38,7 +38,7 @@ export function SnippetCategory({
 
   return (
     <div className="space-y-6">
-      <div 
+      <div
         className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors"
         onClick={onToggle}
       >
@@ -60,7 +60,7 @@ export function SnippetCategory({
           </div>
         </div>
       </div>
-      
+
       {!isCollapsed && (
         <div className="space-y-6 pl-4">
           {snippets.map((snippet, index) => (

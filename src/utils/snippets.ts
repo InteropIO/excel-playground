@@ -9,9 +9,9 @@ export function createDatabaseSnippets(state: DatabaseState): CodeSnippet[] {
       code: `const dataSource = {
   name: '${state.dataSource.name}',
   columns: [
-    { name: 'ID', type: ColumnType.Integer, pk: true, autoIncrement: true, nullable: false },
-    { name: 'Name', type: ColumnType.Text, pk: false, autoIncrement: false, nullable: false },
-    { name: 'Email', type: ColumnType.Text, pk: false, autoIncrement: false, nullable: true }
+    { name: 'ID', type: ColumnType.Integer, primaryKey: true, autoIncrement: true, nullable: false },
+    { name: 'Name', type: ColumnType.Text, primaryKey: false, autoIncrement: false, nullable: false },
+    { name: 'Email', type: ColumnType.Text, primaryKey: false, autoIncrement: false, nullable: true }
   ],
   primaryKey: ['ID'],
   data: [
@@ -46,16 +46,16 @@ console.log(result.data);`
       category: "Data",
       description: "Update a specific row in the table using primary key",
       code: `const rowData = ['Updated Name', 'updated@example.com'];
-const pkValue = 1;
-await dbService.updateRow(dataSource, rowData, pkValue);`
+const primaryKeyValue = 1;
+await dbService.updateRow(dataSource, rowData, primaryKeyValue);`
     },
     {
       title: "Update Columns",
       category: "Data",
       description: "Update specific columns in a row using primary key",
       code: `const updates = { Name: 'Updated Name', Email: 'updated@example.com' };
-const pkValue = 1;
-await dbService.updateColumns(dataSource, updates, pkValue);`
+const primaryKeyValue = 1;
+await dbService.updateColumns(dataSource, updates, primaryKeyValue);`
     },
     {
       title: "Dispose Database",
@@ -115,13 +115,13 @@ await xlService.write(range, '${state.cellValue}');`
       title: "Read Excel Reference",
       category: "Read/Write",
       description: "Read data using Excel reference notation",
-      code: `const result = await xlService.readXlRef('${state.xlReference}');`
+      code: `const result = await xlService.readExcelRef('${state.xlReference}');`
     },
     {
       title: "Write Excel Reference",
       category: "Read/Write",
       description: "Write data using Excel reference notation",
-      code: `await xlService.writeXlRef('${state.xlReference}', '${state.cellValue}');`
+      code: `await xlService.writeExcelRef('${state.xlReference}', '${state.cellValue}');`
     },
 
     // Subscription Operations
@@ -130,8 +130,8 @@ await xlService.write(range, '${state.cellValue}');`
       category: "Subscriptions",
       description: "Subscribe to changes in a specific Excel range",
       code: `const range = { workbook: '${state.workbookName}', worksheet: '${state.worksheetName}', range: '${state.rangeValue}' };
-const subscriptionInfo = { callbackEndpoint: 'xlServiceCxtMenuCallback' };
-const result = await xlService.subscribe(range, subscriptionInfo);`
+const callback = () => {};
+const result = await xlService.subscribe(range, callback);`
     },
     {
       title: "Subscribe to Deltas",
@@ -158,10 +158,10 @@ const columns = ['ID', 'Name', 'Email'];
 const data = [['1', 'John Doe', 'john@example.com'], ['2', 'Jane Smith', 'jane@example.com']];
 
 await xlService.createTable(
-  range, 
-  '${state.tableName}', 
-  'TableStyleMedium2', 
-  columns, 
+  range,
+  '${state.tableName}',
+  'TableStyleMedium2',
+  columns,
   data,
   (origin, subscriptionId, ...props) => {
     console.log('Table callback triggered', { origin, subscriptionId, props });
@@ -204,10 +204,10 @@ const result = await xlService.readTableRows(range, '${state.tableName}', ${stat
       category: "Tables",
       description: "Add, remove, or rename columns in a table",
       code: `const range = { workbook: '${state.workbookName}', worksheet: '${state.worksheetName}', range: '${state.rangeValue}' };
-const columnOps = [
-  { OldName: 'Email', Name: 'EmailAddress', Position: null, Op: 'Rename' }
+const columnOperations = [
+  { currentName: 'Email', newName: 'EmailAddress', position: null, operation: 'Rename' }
 ];
-await xlService.updateTableColumns(range, '${state.tableName}', columnOps);`
+await xlService.updateTableColumns(range, '${state.tableName}', columnOperations);`
     },
     {
       title: "Describe Table Columns",

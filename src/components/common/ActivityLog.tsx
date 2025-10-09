@@ -45,7 +45,7 @@ export function ActivityLog({ logs, isLoading, onClearLogs }: ActivityLogProps) 
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
-      
+
       <div className="flex-1 overflow-y-auto min-h-0">
           {isLoading && (
             <div className="p-4 border-b border-gray-100 bg-yellow-50">
@@ -55,7 +55,7 @@ export function ActivityLog({ logs, isLoading, onClearLogs }: ActivityLogProps) 
               </div>
             </div>
           )}
-          
+
           {logs.length === 0 && !isLoading ? (
             <div className="p-8 text-center text-gray-500">
               <Activity className="w-8 h-8 mx-auto mb-2 text-gray-300" />

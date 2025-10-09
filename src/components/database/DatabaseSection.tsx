@@ -24,9 +24,9 @@ export function DatabaseSection({
 }: DatabaseSectionProps) {
   return (
     <div className="space-y-8">
-      <DatabaseConfig 
-        dataSource={dataSource} 
-        onDataSourceChange={onDataSourceChange} 
+      <DatabaseConfig
+        dataSource={dataSource}
+        onDataSourceChange={onDataSourceChange}
       />
 
       {/* Database Operations */}
