@@ -106,10 +106,10 @@ export function DatabaseConfig({ dataSource, onDataSourceChange }: DatabaseConfi
                   <label className="flex items-center text-xs">
                     <input
                       type="checkbox"
-                      checked={column.primaryKey}
+                      checked={column.pk}
                       onChange={(e) => {
                         const newColumns = [...dataSource.columns];
-                        newColumns[index] = { ...newColumns[index], primaryKey: e.target.checked };
+                        newColumns[index] = { ...newColumns[index], pk: e.target.checked };
                         updateDataSource({ columns: newColumns });
                       }}
                       className="mr-1"

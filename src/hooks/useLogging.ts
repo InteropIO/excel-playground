@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { LogEntry } from '../types';
-import { ExcelServiceResult } from '../io-excel-service';
+import { XLServiceResult } from '../io-excel-service';
 
 export function useLogging() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -18,7 +18,7 @@ export function useLogging() {
     setLogs(prev => [newLog, ...prev.slice(0, 49)]); // Keep last 50 logs
   };
 
-  const executeWithLogging = async (method: string, operation: () => Promise<ExcelServiceResult>, params?: any) => {
+  const executeWithLogging = async (method: string, operation: () => Promise<XLServiceResult>, params?: any) => {
     setIsLoading(true);
     try {
       const result = await operation();

@@ -19,11 +19,11 @@ export function useDatabaseOperations() {
     executeQuery: (dataSource: DataSource, queryText: string) =>
       dbService.current.executeQuery(dataSource, queryText),
 
-    updateRow: (dataSource: DataSource, rowData: any[], primaryKeyValue: any) =>
-      dbService.current.updateRow(dataSource, rowData, primaryKeyValue),
+    updateRow: (dataSource: DataSource, rowData: any[], pkValue: any) =>
+      dbService.current.updateRow(dataSource, rowData, pkValue),
 
-    updateColumns: (dataSource: DataSource, updates: Record<string, any>, primaryKeyValue: any) =>
-      dbService.current.updateColumns(dataSource, updates, primaryKeyValue),
+    updateColumns: (dataSource: DataSource, updates: Record<string, any>, pkValue: any) =>
+      dbService.current.updateColumns(dataSource, updates, pkValue),
 
     disposeDatabase: (dataSource: DataSource) =>
       dbService.current.dispose(dataSource)

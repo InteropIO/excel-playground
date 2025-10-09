@@ -20,9 +20,9 @@ function App() {
     dataSource: {
       name: 'UserTable',
       columns: [
-        { name: 'ID', type: ColumnType.Integer, primaryKey: true, autoIncrement: true, nullable: false },
-        { name: 'Name', type: ColumnType.Text, primaryKey: false, autoIncrement: false, nullable: false },
-        { name: 'Email', type: ColumnType.Text, primaryKey: false, autoIncrement: false, nullable: true }
+        { name: 'ID', type: ColumnType.Integer, pk: true, autoIncrement: true, nullable: false },
+        { name: 'Name', type: ColumnType.Text, pk: false, autoIncrement: false, nullable: false },
+        { name: 'Email', type: ColumnType.Text, pk: false, autoIncrement: false, nullable: true }
       ],
       primaryKey: ['ID'],
       data: [
@@ -87,8 +87,8 @@ function App() {
         updateDatabaseState({ queryResults: result.data });
       }
     },
-    () => executeWithLogging('DB.UpdateRow', () => dbOps.updateRow(databaseState.dataSource, ['Updated Name', 'updated@example.com'], 1), { rowData: ['Updated Name', 'updated@example.com'], primaryKeyValue: 1 }),
-    () => executeWithLogging('DB.UpdateColumns', () => dbOps.updateColumns(databaseState.dataSource, { Name: 'Updated Name', Email: 'updated@example.com' }, 1), { updates: { Name: 'Updated Name', Email: 'updated@example.com' }, primaryKeyValue: 1 }),
+    () => executeWithLogging('DB.UpdateRow', () => dbOps.updateRow(databaseState.dataSource, ['Updated Name', 'updated@example.com'], 1), { rowData: ['Updated Name', 'updated@example.com'], pkValue: 1 }),
+    () => executeWithLogging('DB.UpdateColumns', () => dbOps.updateColumns(databaseState.dataSource, { Name: 'Updated Name', Email: 'updated@example.com' }, 1), { updates: { Name: 'Updated Name', Email: 'updated@example.com' }, pkValue: 1 }),
     () => executeWithLogging('DB.Dispose', () => dbOps.disposeDatabase(databaseState.dataSource), databaseState.dataSource)
   ];
 
@@ -103,8 +103,8 @@ function App() {
     'Read/Write': [
       () => executeWithLogging('XL.Read', xlOps.readRange, { workbook: excelState.workbookName, worksheet: excelState.worksheetName, range: excelState.rangeValue }),
       () => executeWithLogging('XL.Write', xlOps.writeRange, { workbook: excelState.workbookName, worksheet: excelState.worksheetName, range: excelState.rangeValue, value: excelState.cellValue }),
-      () => executeWithLogging('XL.ReadXlRef', xlOps.readExcelRef, { reference: excelState.xlReference }),
-      () => executeWithLogging('XL.WriteXlRef', xlOps.writeExcelRef, { reference: excelState.xlReference, value: excelState.cellValue })
+      () => executeWithLogging('XL.ReadXlRef', xlOps.readRef, { reference: excelState.xlReference }),
+      () => executeWithLogging('XL.WriteXlRef', xlOps.writeRef, { reference: excelState.xlReference, value: excelState.cellValue })
     ],
     'Subscriptions': [
       () => executeWithLogging('XL.Subscribe', xlOps.subscribeToRange, { range: excelState.rangeValue }),
@@ -117,7 +117,7 @@ function App() {
       () => executeWithLogging('XL.RefreshTable', xlOps.refreshTable, { range: excelState.rangeValue, tableName: excelState.tableName }),
       () => executeWithLogging('XL.WriteTableRows', xlOps.writeTableRows, { tableName: excelState.tableName, rowPosition: excelState.rowPosition, data: [['3', 'New User', 'newuser@example.com']] }),
       () => executeWithLogging('XL.ReadTableRows', xlOps.readTableRows, { tableName: excelState.tableName, fromRow: excelState.fromRow, rowsToRead: excelState.rowsToRead }),
-      () => executeWithLogging('XL.UpdateTableColumns', xlOps.updateTableColumns, { tableName: excelState.tableName, columnOperations: [{ currentName: 'Email', newName: 'EmailAddress', position: null, operation: 'Rename' }] }),
+      () => executeWithLogging('XL.UpdateTableColumns', xlOps.updateTableColumns, { tableName: excelState.tableName, columnOps: [{ oldName: 'Email', name: 'EmailAddress', position: null, op: 'Rename' }] }),
       () => executeWithLogging('XL.DescribeTableColumns', xlOps.describeTableColumns, { tableName: excelState.tableName })
     ],
     'Menus': [

@@ -3,9 +3,9 @@
 dataSource = {
     name: "UserTable",
     columns: [
-        { name: "ID", type: "Integer", primaryKey: true, autoIncrement: true, nullable: false },
-        { name: "Name", type: "Text", primaryKey: false, autoIncrement: false, nullable: false },
-        { name: "Email", type: "Text", primaryKey: false, autoIncrement: false, nullable: true },
+        { name: "ID", type: "Integer", pk: true, autoIncrement: true, nullable: false },
+        { name: "Name", type: "Text", pk: false, autoIncrement: false, nullable: false },
+        { name: "Email", type: "Text", pk: false, autoIncrement: false, nullable: true },
     ],
     primaryKey: ["ID"],
     data: [
@@ -38,13 +38,13 @@ xlService.createDynamicRibbonMenu("Another", {range: "A1:B10"}, console.info);
 export type TableColumnOperation = "Add" | "Delete" | "Rename" | "Update";
 
 export interface TableColumnOperationDescriptor {
-    currentName: string;
-    newName: string;
+    oldName: string;
+    name: string;
     position: number | null;
-    operation: TableColumnOperation;
+    op: TableColumnOperation;
 }
 
-export enum ExcelRibbonObjectType {
+export enum XLRibbonObjectType {
     Button = "Button",
     DynamicMenu = "DynamicMenu",
     Separator = "Separator",
@@ -52,20 +52,20 @@ export enum ExcelRibbonObjectType {
     Tab = "Tab"
 }
 
-export interface ExcelRibbonObject {
+export interface XLRibbonObject {
     label?: string;
     image?: string;
     size?: string;
     tag?: string;
     callback?: SubscriptionInfo;
-    type: ExcelRibbonObjectType;
-    controls?: ExcelRibbonObject[];
+    type: XLRibbonObjectType;
+    controls?: XLRibbonObject[];
     id?: string;
     screenTip?: string;
     superTip?: string;
 }
 
-export interface ExcelServiceResult {
+export interface XLServiceResult {
     success?: boolean;
     message?: string;
 
@@ -97,7 +97,7 @@ export interface ExcelServiceResult {
     activeWindow?: string;
 
     // Ribbon properties
-    customTabs?: ExcelRibbonObject[];
+    customTabs?: XLRibbonObject[];
     customRibbonDataLocation?: string;
 
     // Data properties
@@ -199,7 +199,7 @@ export interface DataSource {
 }
 
 export interface Column {
-    primaryKey: boolean;
+    pk: boolean;
     autoIncrement: boolean;
     name: string;
     type: ColumnType;
@@ -207,13 +207,13 @@ export interface Column {
     defaultValue?: any;
 }
 
-export enum ExcelSaveConflictResolution {
+export enum XLSaveConflictResolution {
     UserResolution = "xlUserResolution",
     LocalSessionChanges = "xlLocalSessionChanges",
     OtherSessionChanges = "xlOtherSessionChanges"
 }
 
-export type ExcelCallback = (origin: any, ...props: any[]) => void;
+export type XLCallback = (origin: any, ...props: any[]) => void;
 export type MenuArgs = { returned: { menu?: any; menuId?: string } };
 export type ArgsType = { returned: any };
 export type TableArgs = { returned: { subscriptionId?: string } };
@@ -242,13 +242,13 @@ export class IOConnectDBService {
             .then((args: any) => args.returned);
     }
 
-    updateRow(dataSource: DataSource, rowData: object[], primaryKeyValue: any): Promise<object> {
-        return this.io.interop.invoke(`${this.methodNs}UpdateRow`, { dataSource, rowData, primaryKeyValue })
+    updateRow(dataSource: DataSource, rowData: object[], pkValue: any): Promise<object> {
+        return this.io.interop.invoke(`${this.methodNs}UpdateRow`, { dataSource, rowData, pkValue })
             .then((args: any) => args.returned);
     }
 
-    updateColumns(dataSource: DataSource, updates: Record<string, any>, primaryKeyValue: any): Promise<object> {
-        return this.io.interop.invoke(`${this.methodNs}UpdateColumns`, { dataSource, updates, primaryKeyValue })
+    updateColumns(dataSource: DataSource, updates: Record<string, any>, pkValue: any): Promise<object> {
+        return this.io.interop.invoke(`${this.methodNs}UpdateColumns`, { dataSource, updates, pkValue })
             .then((args: any) => args.returned);
     }
 
@@ -263,14 +263,14 @@ export class IOConnectDBService {
     }
 }
 
-export class IOConnectExcelService {
+export class IOConnectXLService {
     private io: any;
     private methodNs: string;
-    private callbackMap: Map<string, ExcelCallback>;
+    private callbackMap: Map<string, XLCallback>;
 
     private readonly xlServiceCallback = "xlServiceCxtMenuCallback";
 
-    constructor(ioInstance: any, methodNs: string = "T42.XL.") {
+    constructor(ioInstance: any, methodNs: string = "IO.XL.") {
         this.io = ioInstance;
         this.methodNs = methodNs;
         this.callbackMap = new Map();
@@ -281,12 +281,13 @@ export class IOConnectExcelService {
             if (callback) {
                 callback(args);
             } else {
-                console.log("Missing callback.")
+                // TODO: Choose a proper warning mechanism.
+                console.warn("Missing callback.")
             }
         });
     }
 
-    createWorkbook(workbookFile: string, worksheet: string, saveConflictResolution: ExcelSaveConflictResolution = ExcelSaveConflictResolution.UserResolution): Promise<object> {
+    createWorkbook(workbookFile: string, worksheet: string, saveConflictResolution: XLSaveConflictResolution = XLSaveConflictResolution.UserResolution): Promise<object> {
         return this.io.interop.invoke(`${this.methodNs}CreateWorkbook`, { workbookFile, worksheet, saveConflictResolution })
             .then((args: ArgsType) => args.returned);
     }
@@ -296,7 +297,7 @@ export class IOConnectExcelService {
             .then((args: ArgsType) => args.returned);
     }
 
-    subscribeDeltas(rangeInfo: RangeInfo, callback: ExcelCallback): Promise<object> {
+    subscribeDeltas(rangeInfo: RangeInfo, callback: XLCallback): Promise<object> {
         return this.subscribeDeltasRaw(rangeInfo, {
             callbackEndpoint: this.xlServiceCallback
         }).then((returned: any) => {
@@ -304,7 +305,8 @@ export class IOConnectExcelService {
             if (subscriptionId) {
                 this.callbackMap.set(subscriptionId, callback);
             } else {
-                console.log("No subscription ID.")
+                // TODO: Choose a proper warning mechanism.
+                console.warn("No subscription ID.")
             }
 
             return returned;
@@ -316,7 +318,7 @@ export class IOConnectExcelService {
             .then((args: ArgsType) => args.returned);
     }
 
-    subscribe(rangeInfo: RangeInfo, callback: ExcelCallback): Promise<object> {
+    subscribe(rangeInfo: RangeInfo, callback: XLCallback): Promise<object> {
         return this.subscribeRaw(rangeInfo, {
             callbackEndpoint: this.xlServiceCallback
         }).then((returned: any) => {
@@ -324,7 +326,8 @@ export class IOConnectExcelService {
             if (subscriptionId) {
                 this.callbackMap.set(subscriptionId, callback);
             } else {
-                console.log("No subscription ID.")
+                // TODO: Choose a proper warning mechanism.
+                console.warn("No subscription ID.")
             }
 
             return returned;
@@ -347,7 +350,7 @@ export class IOConnectExcelService {
     }
 
     createTable(range: RangeInfo, tableName: string, tableStyle: string, columns: string[], value: object[][],
-        callback: ExcelCallback): Promise<object> {
+        callback: XLCallback): Promise<object> {
         return this.io.interop.invoke(`${this.methodNs}CreateTable`, {
             range, tableName, tableStyle, columns, value, subscriptionInfo: {
                 callbackEndpoint: this.xlServiceCallback
@@ -385,8 +388,8 @@ export class IOConnectExcelService {
             .then((args: ArgsType) => args.returned);
     }
 
-    updateTableColumns(range: RangeInfo, tableName: string, columnOperations: TableColumnOperationDescriptor[]): Promise<object> {
-        return this.io.interop.invoke(`${this.methodNs}UpdateTableColumns`, { range, tableName, columnOperations })
+    updateTableColumns(range: RangeInfo, tableName: string, columnOps: TableColumnOperationDescriptor[]): Promise<object> {
+        return this.io.interop.invoke(`${this.methodNs}UpdateTableColumns`, { range, tableName, columnOps })
             .then((args: ArgsType) => args.returned);
     }
 
@@ -395,12 +398,12 @@ export class IOConnectExcelService {
             .then((args: ArgsType) => args.returned);
     }
 
-    readExcelRef(reference: string): Promise<object> {
+    readRef(reference: string): Promise<object> {
         return this.io.interop.invoke(`${this.methodNs}ReadXlRef`, { reference })
             .then((args: ArgsType) => args.returned);
     }
 
-    writeExcelRef(reference: string, value: object): Promise<object> {
+    writeRef(reference: string, value: object): Promise<object> {
         return this.io.interop.invoke(`${this.methodNs}WriteXlRef`, { reference, value })
             .then((args: ArgsType) => args.returned);
     }
@@ -470,7 +473,7 @@ export class IOConnectExcelService {
     createOrUpdateCTP(
         range: RangeInfo,
         ctpDescriptor: CTPDescriptor,
-        callback: ExcelCallback
+        callback: XLCallback
     ): Promise<object> {
         const subscriptionInfo: SubscriptionInfo = {
             callbackEndpoint: this.xlServiceCallback,
@@ -502,7 +505,7 @@ export class IOConnectExcelService {
     createDynamicRibbonMenu(
         caption: string,
         range: RangeInfo,
-        callback: ExcelCallback,
+        callback: XLCallback,
     ): Promise<object> {
         return this.io.interop.invoke(`${this.methodNs}CreateDynamicRibbonMenu`, {
             caption, range, subscriptionInfo: {
@@ -536,7 +539,7 @@ export class IOConnectExcelService {
         caption: string,
         menuPath: string[],
         range: RangeInfo,
-        callback: ExcelCallback,
+        callback: XLCallback,
     ): Promise<object> {
         return this.io.interop.invoke(`${this.methodNs}CreateContextMenu`, {
             caption, menuPath, range, subscriptionInfo: {

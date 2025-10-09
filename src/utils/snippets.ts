@@ -9,9 +9,9 @@ export function createDatabaseSnippets(state: DatabaseState): CodeSnippet[] {
       code: `const dataSource = {
   name: '${state.dataSource.name}',
   columns: [
-    { name: 'ID', type: ColumnType.Integer, primaryKey: true, autoIncrement: true, nullable: false },
-    { name: 'Name', type: ColumnType.Text, primaryKey: false, autoIncrement: false, nullable: false },
-    { name: 'Email', type: ColumnType.Text, primaryKey: false, autoIncrement: false, nullable: true }
+    { name: 'ID', type: ColumnType.Integer, pk: true, autoIncrement: true, nullable: false },
+    { name: 'Name', type: ColumnType.Text, pk: false, autoIncrement: false, nullable: false },
+    { name: 'Email', type: ColumnType.Text, pk: false, autoIncrement: false, nullable: true }
   ],
   primaryKey: ['ID'],
   data: [
@@ -46,16 +46,16 @@ console.log(result.data);`
       category: "Data",
       description: "Update a specific row in the table using primary key",
       code: `const rowData = ['Updated Name', 'updated@example.com'];
-const primaryKeyValue = 1;
-await dbService.updateRow(dataSource, rowData, primaryKeyValue);`
+const pkValue = 1;
+await dbService.updateRow(dataSource, rowData, pkValue);`
     },
     {
       title: "Update Columns",
       category: "Data",
       description: "Update specific columns in a row using primary key",
       code: `const updates = { Name: 'Updated Name', Email: 'updated@example.com' };
-const primaryKeyValue = 1;
-await dbService.updateColumns(dataSource, updates, primaryKeyValue);`
+const pkValue = 1;
+await dbService.updateColumns(dataSource, updates, pkValue);`
     },
     {
       title: "Dispose Database",
@@ -115,13 +115,13 @@ await xlService.write(range, '${state.cellValue}');`
       title: "Read Excel Reference",
       category: "Read/Write",
       description: "Read data using Excel reference notation",
-      code: `const result = await xlService.readExcelRef('${state.xlReference}');`
+      code: `const result = await xlService.readRef('${state.xlReference}');`
     },
     {
       title: "Write Excel Reference",
       category: "Read/Write",
       description: "Write data using Excel reference notation",
-      code: `await xlService.writeExcelRef('${state.xlReference}', '${state.cellValue}');`
+      code: `await xlService.writeRef('${state.xlReference}', '${state.cellValue}');`
     },
 
     // Subscription Operations
@@ -130,7 +130,7 @@ await xlService.write(range, '${state.cellValue}');`
       category: "Subscriptions",
       description: "Subscribe to changes in a specific Excel range",
       code: `const range = { workbook: '${state.workbookName}', worksheet: '${state.worksheetName}', range: '${state.rangeValue}' };
-const callback = () => {};
+const callback = (origin, subscriptionId, ...props) => console.log('Subscribe callback triggered', origin, subscriptionId, props);
 const result = await xlService.subscribe(range, callback);`
     },
     {
@@ -138,8 +138,8 @@ const result = await xlService.subscribe(range, callback);`
       category: "Subscriptions",
       description: "Subscribe to delta changes in a range with data top-left position",
       code: `const range = { workbook: '${state.workbookName}', worksheet: '${state.worksheetName}', range: '${state.rangeValue}' };
-const subscriptionInfo = { callbackEndpoint: 'xlServiceCxtMenuCallback' };
-await xlService.subscribeDeltas(range,  subscriptionInfo);`
+const callback = (origin, subscriptionId, ...props) => console.log('Subscribe deltas callback triggered', origin, subscriptionId, props);
+await xlService.subscribeDeltas(range, callback);`
     },
     {
       title: "Destroy Subscription",
@@ -164,7 +164,7 @@ await xlService.createTable(
   columns,
   data,
   (origin, subscriptionId, ...props) => {
-    console.log('Table callback triggered', { origin, subscriptionId, props });
+    console.log('Table callback triggered', origin, subscriptionId, props);
   }
 );`
     },
@@ -204,10 +204,10 @@ const result = await xlService.readTableRows(range, '${state.tableName}', ${stat
       category: "Tables",
       description: "Add, remove, or rename columns in a table",
       code: `const range = { workbook: '${state.workbookName}', worksheet: '${state.worksheetName}', range: '${state.rangeValue}' };
-const columnOperations = [
-  { currentName: 'Email', newName: 'EmailAddress', position: null, operation: 'Rename' }
+const columnOps = [
+  { oldName: 'Email', name: 'EmailAddress', position: null, op: 'Rename' }
 ];
-await xlService.updateTableColumns(range, '${state.tableName}', columnOperations);`
+await xlService.updateTableColumns(range, '${state.tableName}', columnOps);`
     },
     {
       title: "Describe Table Columns",
@@ -229,7 +229,7 @@ await xlService.createContextMenu(
   ['io', 'actions'],
   range,
   (origin, subscriptionId, ...props) => {
-    console.log('Context menu clicked', { origin, subscriptionId, props });
+    console.log('Context menu clicked', origin, subscriptionId, props);
   }
 );`
     },
@@ -263,7 +263,7 @@ await xlService.createDynamicRibbonMenu(
   '${state.ribbonMenuCaption}',
   range,
   (origin, subscriptionId, ...props) => {
-    console.log('Ribbon menu clicked', { origin, subscriptionId, props });
+    console.log('Ribbon menu clicked', origin, subscriptionId, props);
   }
 );`
     },
