@@ -287,17 +287,17 @@ export class IOConnectXLService {
         });
     }
 
-    createWorkbook(workbookFile: string, worksheet: string, saveConflictResolution: XLSaveConflictResolution = XLSaveConflictResolution.UserResolution): Promise<object> {
+    createWorkbook(workbookFile: string, worksheet: string, saveConflictResolution: XLSaveConflictResolution = XLSaveConflictResolution.UserResolution): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}CreateWorkbook`, { workbookFile, worksheet, saveConflictResolution })
             .then((args: ArgsType) => args.returned);
     }
 
-    subscribeDeltasRaw(range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<object> {
+    subscribeDeltasRaw(range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}SubscribeDeltas`, { range, subscriptionInfo })
             .then((args: ArgsType) => args.returned);
     }
 
-    subscribeDeltas(rangeInfo: RangeInfo, callback: XLCallback): Promise<object> {
+    subscribeDeltas(rangeInfo: RangeInfo, callback: XLCallback): Promise<XLServiceResult> {
         return this.subscribeDeltasRaw(rangeInfo, {
             callbackEndpoint: this.xlServiceCallback
         }).then((returned: any) => {
@@ -313,12 +313,12 @@ export class IOConnectXLService {
         });
     }
 
-    subscribeRaw(range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<object> {
+    subscribeRaw(range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}Subscribe`, { range, subscriptionInfo })
             .then((args: ArgsType) => args.returned);
     }
 
-    subscribe(rangeInfo: RangeInfo, callback: XLCallback): Promise<object> {
+    subscribe(rangeInfo: RangeInfo, callback: XLCallback): Promise<XLServiceResult> {
         return this.subscribeRaw(rangeInfo, {
             callbackEndpoint: this.xlServiceCallback
         }).then((returned: any) => {
@@ -334,23 +334,23 @@ export class IOConnectXLService {
         });
     }
 
-    destroySubscription(subscriptionId: string): Promise<object> {
+    destroySubscription(subscriptionId: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}DestroySubscription`, { subscriptionId })
             .then((args: ArgsType) => args.returned);
     }
 
-    read(range: RangeInfo): Promise<object> {
+    read(range: RangeInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}Read`, { range })
             .then((args: ArgsType) => args.returned);
     }
 
-    write(range: RangeInfo, value: object): Promise<object> {
+    write(range: RangeInfo, value: object): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}Write`, { range, value })
             .then((args: ArgsType) => args.returned);
     }
 
     createTable(range: RangeInfo, tableName: string, tableStyle: string, columns: string[], value: object[][],
-        callback: XLCallback): Promise<object> {
+        callback: XLCallback): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}CreateTable`, {
             range, tableName, tableStyle, columns, value, subscriptionInfo: {
                 callbackEndpoint: this.xlServiceCallback
@@ -365,22 +365,22 @@ export class IOConnectXLService {
             });
     }
 
-    createLinkedTable(range: RangeInfo, dataSource: DataSource, subscriptionInfo: SubscriptionInfo): Promise<object> {
+    createLinkedTable(range: RangeInfo, dataSource: DataSource, subscriptionInfo: SubscriptionInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}CreateLinkedTable`, { range, dataSource, subscriptionInfo })
             .then((args: any) => args.returned);
     }
 
-    refreshTable(range: RangeInfo, tableName: string): Promise<object> {
+    refreshTable(range: RangeInfo, tableName: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}RefreshTable`, { range, tableName })
             .then((args: ArgsType) => args.returned);
     }
 
-    writeTableRows(range: RangeInfo, tableName: string, rowPosition: number | null, value: object[][]): Promise<object> {
+    writeTableRows(range: RangeInfo, tableName: string, rowPosition: number | null, value: object[][]): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}WriteTableRows`, { range, tableName, rowPosition, value })
             .then((args: ArgsType) => args.returned);
     }
 
-    readTableRows(range: RangeInfo, tableName: string, fromRow: number, rowsToRead?: number): Promise<object> {
+    readTableRows(range: RangeInfo, tableName: string, fromRow: number, rowsToRead?: number): Promise<XLServiceResult> {
 
         //TODO: Default fromRow to 1
         //TODO for stas check rowsToRead against the table size
@@ -388,72 +388,72 @@ export class IOConnectXLService {
             .then((args: ArgsType) => args.returned);
     }
 
-    updateTableColumns(range: RangeInfo, tableName: string, columnOps: TableColumnOperationDescriptor[]): Promise<object> {
+    updateTableColumns(range: RangeInfo, tableName: string, columnOps: TableColumnOperationDescriptor[]): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}UpdateTableColumns`, { range, tableName, columnOps })
             .then((args: ArgsType) => args.returned);
     }
 
-    describeTableColumns(range: RangeInfo, tableName: string): Promise<object> {
+    describeTableColumns(range: RangeInfo, tableName: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}DescribeTableColumns`, { range, tableName })
             .then((args: ArgsType) => args.returned);
     }
 
-    readRef(reference: string): Promise<object> {
+    readRef(reference: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}ReadXlRef`, { reference })
             .then((args: ArgsType) => args.returned);
     }
 
-    writeRef(reference: string, value: object): Promise<object> {
+    writeRef(reference: string, value: object): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}WriteXlRef`, { reference, value })
             .then((args: ArgsType) => args.returned);
     }
 
-    saveAs(range: RangeInfo, fileName: string): Promise<object> {
+    saveAs(range: RangeInfo, fileName: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}SaveAs`, { range, fileName })
             .then((args: ArgsType) => args.returned);
     }
 
-    openWorkbook(fileName: string): Promise<object> {
+    openWorkbook(fileName: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}OpenWorkbook`, { fileName })
             .then((args: ArgsType) => args.returned);
     }
 
-    createContextMenuRaw(caption: string, menuPath: string[], range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<object> {
+    createContextMenuRaw(caption: string, menuPath: string[], range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}CreateContextMenu`, { caption, menuPath, range, subscriptionInfo })
             .then((args: ArgsType) => args.returned);
     }
 
-    destroyContextMenuRaw(menuId: string): Promise<object> {
+    destroyContextMenuRaw(menuId: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}DestroyContextMenu`, { menuId })
             .then((args: ArgsType) => args.returned);
     }
 
-    writeComment(range: RangeInfo, comment: string): Promise<object> {
+    writeComment(range: RangeInfo, comment: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}WriteComment`, { range, comment })
             .then((args: ArgsType) => args.returned);
     }
 
-    clearComments(range: RangeInfo): Promise<object> {
+    clearComments(range: RangeInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}ClearComments`, { range })
             .then((args: ArgsType) => args.returned);
     }
 
-    clearContents(range: RangeInfo): Promise<object> {
+    clearContents(range: RangeInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}ClearContents`, { range })
             .then((args: ArgsType) => args.returned);
     }
 
-    applyStyles(range: RangeInfo, backgroundColor: string, foregroundColor: string): Promise<object> {
+    applyStyles(range: RangeInfo, backgroundColor: string, foregroundColor: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}ApplyStyles`, { range, backgroundColor, foregroundColor })
             .then((args: ArgsType) => args.returned);
     }
 
-    setRangeFormat(range: RangeInfo): Promise<object> {
+    setRangeFormat(range: RangeInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}SetRangeFormat`, { range })
             .then((args: ArgsType) => args.returned);
     }
 
-    createDynamicRibbonMenuRaw(caption: string, range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<object> {
+    createDynamicRibbonMenuRaw(caption: string, range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}CreateDynamicRibbonMenu`, { caption, range, subscriptionInfo })
             .then((args: ArgsType) => args.returned);
     }
@@ -462,7 +462,7 @@ export class IOConnectXLService {
         range: RangeInfo,
         ctpDescriptor: CTPDescriptor,
         subscriptionInfo: SubscriptionInfo
-    ): Promise<any> {
+    ): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}CreateOrUpdateCTP`, {
             range,
             ctpDescriptor,
@@ -474,7 +474,7 @@ export class IOConnectXLService {
         range: RangeInfo,
         ctpDescriptor: CTPDescriptor,
         callback: XLCallback
-    ): Promise<object> {
+    ): Promise<XLServiceResult> {
         const subscriptionInfo: SubscriptionInfo = {
             callbackEndpoint: this.xlServiceCallback,
             callbackId: ctpDescriptor.id
@@ -506,7 +506,7 @@ export class IOConnectXLService {
         caption: string,
         range: RangeInfo,
         callback: XLCallback,
-    ): Promise<object> {
+    ): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}CreateDynamicRibbonMenu`, {
             caption, range, subscriptionInfo: {
                 callbackEndpoint: this.xlServiceCallback
@@ -521,12 +521,12 @@ export class IOConnectXLService {
             });
     }
 
-    destroyRibbonMenuRaw(menuId: string): Promise<object> {
+    destroyRibbonMenuRaw(menuId: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}DestroyRibbonMenu`, { menuId })
             .then((args: ArgsType) => args.returned);
     }
 
-    destroyRibbonMenu(menuId: string): Promise<object> {
+    destroyRibbonMenu(menuId: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}DestroyRibbonMenu`, { menuId })
             .then((args: MenuArgs) => {
                 // Remove the callback from the map when menu is destroyed
@@ -540,7 +540,7 @@ export class IOConnectXLService {
         menuPath: string[],
         range: RangeInfo,
         callback: XLCallback,
-    ): Promise<object> {
+    ): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}CreateContextMenu`, {
             caption, menuPath, range, subscriptionInfo: {
                 callbackEndpoint: this.xlServiceCallback
@@ -555,7 +555,7 @@ export class IOConnectXLService {
             });
     }
 
-    destroyContextMenu(menuId: string): Promise<object> {
+    destroyContextMenu(menuId: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}DestroyContextMenu`, { menuId })
             .then((args: MenuArgs) => {
                 // Remove the callback from the map when menu is destroyed
@@ -564,7 +564,7 @@ export class IOConnectXLService {
             });
     }
 
-    activate(range?: RangeInfo): Promise<object> {
+    activate(range?: RangeInfo): Promise<XLServiceResult> {
         return this.io.interop
             .invoke(`${this.methodNs}Activate`, { range })
             .then((args: { returned: { result?: any } }) => args.returned);
