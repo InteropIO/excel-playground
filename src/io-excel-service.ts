@@ -517,7 +517,7 @@ export class IOConnectXLService {
                 if (menuId) {
                     this.callbackMap.set(menuId, callback);
                 }
-                return args.returned.menuId;
+                return args.returned;
             });
     }
 
@@ -531,7 +531,7 @@ export class IOConnectXLService {
             .then((args: MenuArgs) => {
                 // Remove the callback from the map when menu is destroyed
                 this.callbackMap.delete(menuId);
-                return args.returned.menuId;
+                return args.returned;
             });
     }
 
@@ -551,7 +551,7 @@ export class IOConnectXLService {
                 if (menuId) {
                     this.callbackMap.set(menuId, callback);
                 }
-                return args.returned.menuId;
+                return args.returned;
             });
     }
 
@@ -560,7 +560,7 @@ export class IOConnectXLService {
             .then((args: MenuArgs) => {
                 // Remove the callback from the map when menu is destroyed
                 this.callbackMap.delete(menuId);
-                return args.returned.menuId;
+                return args.returned;
             });
     }
 
