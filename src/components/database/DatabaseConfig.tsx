@@ -17,7 +17,7 @@ export function DatabaseConfig({ dataSource, onDataSourceChange }: DatabaseConfi
         <Database className="w-4 h-4 mr-2" />
         Database Configuration
       </h3>
-      
+
       {/* Primary Configuration - Always Visible */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
         <div>
@@ -68,7 +68,7 @@ export function DatabaseConfig({ dataSource, onDataSourceChange }: DatabaseConfi
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </summary>
-        
+
         <div className="mt-3 space-y-3">
           {/* Column Configuration */}
           <div>
@@ -146,7 +146,7 @@ export function DatabaseConfig({ dataSource, onDataSourceChange }: DatabaseConfi
               ))}
             </div>
           </div>
-          
+
           {/* Sample Data Preview */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-2">Sample Data (First 3 rows)</label>

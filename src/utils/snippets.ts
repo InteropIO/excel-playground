@@ -115,13 +115,13 @@ await xlService.write(range, '${state.cellValue}');`
       title: "Read Excel Reference",
       category: "Read/Write",
       description: "Read data using Excel reference notation",
-      code: `const result = await xlService.readXlRef('${state.xlReference}');`
+      code: `const result = await xlService.readRef('${state.xlReference}');`
     },
     {
       title: "Write Excel Reference",
       category: "Read/Write",
       description: "Write data using Excel reference notation",
-      code: `await xlService.writeXlRef('${state.xlReference}', '${state.cellValue}');`
+      code: `await xlService.writeRef('${state.xlReference}', '${state.cellValue}');`
     },
 
     // Subscription Operations
@@ -130,16 +130,16 @@ await xlService.write(range, '${state.cellValue}');`
       category: "Subscriptions",
       description: "Subscribe to changes in a specific Excel range",
       code: `const range = { workbook: '${state.workbookName}', worksheet: '${state.worksheetName}', range: '${state.rangeValue}' };
-const subscriptionInfo = { callbackEndpoint: 'xlServiceCxtMenuCallback' };
-const result = await xlService.subscribe(range, subscriptionInfo);`
+const callback = (origin, subscriptionId, ...props) => addLog('info', 'XL.SubscribeCallback', 'Subscribe callback triggered', { origin, subscriptionId, props });
+const result = await xlService.subscribe(range, callback);`
     },
     {
       title: "Subscribe to Deltas",
       category: "Subscriptions",
       description: "Subscribe to delta changes in a range with data top-left position",
       code: `const range = { workbook: '${state.workbookName}', worksheet: '${state.worksheetName}', range: '${state.rangeValue}' };
-const subscriptionInfo = { callbackEndpoint: 'xlServiceCxtMenuCallback' };
-await xlService.subscribeDeltas(range,  subscriptionInfo);`
+const callback = (origin, subscriptionId, ...props) => addLog('info', 'XL.SubscribeDeltasCallback', 'Subscribe deltas callback triggered', { origin, subscriptionId, props });
+await xlService.subscribeDeltas(range, callback);`
     },
     {
       title: "Destroy Subscription",
@@ -158,13 +158,13 @@ const columns = ['ID', 'Name', 'Email'];
 const data = [['1', 'John Doe', 'john@example.com'], ['2', 'Jane Smith', 'jane@example.com']];
 
 await xlService.createTable(
-  range, 
-  '${state.tableName}', 
-  'TableStyleMedium2', 
-  columns, 
+  range,
+  '${state.tableName}',
+  'TableStyleMedium2',
+  columns,
   data,
   (origin, subscriptionId, ...props) => {
-    console.log('Table callback triggered', { origin, subscriptionId, props });
+    addLog('info', 'XL.TableCallback', 'Table callback triggered', { origin, subscriptionId, props });
   }
 );`
     },
@@ -205,7 +205,7 @@ const result = await xlService.readTableRows(range, '${state.tableName}', ${stat
       description: "Add, remove, or rename columns in a table",
       code: `const range = { workbook: '${state.workbookName}', worksheet: '${state.worksheetName}', range: '${state.rangeValue}' };
 const columnOps = [
-  { OldName: 'Email', Name: 'EmailAddress', Position: null, Op: 'Rename' }
+  { oldName: 'Email', name: 'EmailAddress', position: null, op: 'Rename' }
 ];
 await xlService.updateTableColumns(range, '${state.tableName}', columnOps);`
     },
@@ -229,7 +229,7 @@ await xlService.createContextMenu(
   ['io', 'actions'],
   range,
   (origin, subscriptionId, ...props) => {
-    console.log('Context menu clicked', { origin, subscriptionId, props });
+    addLog('info', 'XL.ContextMenuCallback', 'Context menu clicked', { origin, subscriptionId, props });
   }
 );`
     },
@@ -263,7 +263,7 @@ await xlService.createDynamicRibbonMenu(
   '${state.ribbonMenuCaption}',
   range,
   (origin, subscriptionId, ...props) => {
-    console.log('Ribbon menu clicked', { origin, subscriptionId, props });
+    addLog('info', 'XL.RibbonMenuCallback', 'Ribbon menu clicked', { origin, subscriptionId, props });
   }
 );`
     },

@@ -1,70 +1,72 @@
 import { useRef, useContext, useCallback } from 'react';
 import { IOConnectContext } from "@interopio/react-hooks";
-import { GlueExcelService, DataSource } from '../io-excel-service';
+import { IOConnectXLService, DataSource } from '../io-excel-service';
 import { ExcelState } from '../types';
 
 export function useExcelOperations() {
   const ioAPI = useContext(IOConnectContext);
-  const xlService = useRef<GlueExcelService | null>(null);
+  const xlService = useRef<IOConnectXLService | null>(null);
 
   // Initialize service only once
   if (!xlService.current) {
-    xlService.current = new GlueExcelService(ioAPI);
-    console.log('Created new GlueExcelService instance:', xlService.current);
-  } 
+    xlService.current = new IOConnectXLService(ioAPI);
+    window.xlService = xlService.current;
+    window.io = ioAPI;
+    console.log('Created new IOConnectXLService instance:', xlService.current);
+  }
 
   const createOperations = useCallback((state: ExcelState, dataSource: DataSource, addLog: any) => {
-    const createRange = () => ({ 
-      workbook: state.workbookName, 
-      worksheet: state.worksheetName, 
-      range: state.rangeValue 
+    const createRange = () => ({
+      workbook: state.workbookName,
+      worksheet: state.worksheetName,
+      range: state.rangeValue
     });
 
     return {
       // Basic Operations
-      createWorkbook: () => 
+      createWorkbook: () =>
         xlService.current!.createWorkbook(state.workbookName, state.worksheetName),
-      
-      openWorkbook: () => 
+
+      openWorkbook: () =>
         xlService.current!.openWorkbook(state.fileName),
-      
-      saveWorkbook: () => 
+
+      saveWorkbook: () =>
         xlService.current!.saveAs(createRange(), state.fileName),
-      
-      activateRange: () => 
+
+      activateRange: () =>
         xlService.current!.activate(createRange()),
 
       // Read/Write Operations
-      readRange: () => 
+      readRange: () =>
         xlService.current!.read(createRange()),
-      
-      writeRange: () => 
+
+      writeRange: () =>
         xlService.current!.write(createRange(), state.cellValue as any),
-      
-      readXlRef: () => 
-        xlService.current!.readXlRef(state.xlReference),
-      
-      writeXlRef: () => 
-        xlService.current!.writeXlRef(state.xlReference, state.cellValue as any),
+
+      readRef: () =>
+        xlService.current!.readRef(state.xlReference),
+
+      writeRef: () =>
+        xlService.current!.writeRef(state.xlReference, state.cellValue as any),
 
       // Subscription Operations
-      subscribeToRange: () => 
+      subscribeToRange: () =>
         xlService.current!.subscribe(
           createRange(),
-          { callbackEndpoint: 'xlServiceCxtMenuCallback' }
+          (origin, subscriptionId, ...props) => addLog('info', 'XL.SubscribeCallback', 'Subscribe callback triggered', { origin, subscriptionId, props })
         ),
-      
-      subscribeDeltas: () => 
+
+      subscribeDeltas: () =>
         xlService.current!.subscribeDeltas(
           createRange(),
-          { callbackEndpoint: 'xlServiceCxtMenuCallback' }
+          (origin, subscriptionId, ...props) => addLog('info', 'XL.SubscribeDeltasCallback', 'Subscribe deltas callback triggered', { origin, subscriptionId, props })
         ),
-      
-      destroySubscription: () => 
+
+      destroySubscription: () =>
         xlService.current!.destroySubscription(state.subscriptionId),
 
       // Table Operations
-      createExcelTable: () => 
+      createExcelTable: () =>
         xlService.current!.createTable(
           createRange(),
           state.tableName,
@@ -73,91 +75,91 @@ export function useExcelOperations() {
           [['1', 'John Doe', 'john@example.com'], ['2', 'Jane Smith', 'jane@example.com']] as any,
           (origin, subscriptionId, ...props) => addLog('info', 'XL.TableCallback', 'Table callback triggered', { origin, subscriptionId, props })
         ),
-      
-      createLinkedTable: () => 
+
+      createLinkedTable: () =>
         xlService.current!.createLinkedTable(
           createRange(),
           dataSource,
           { callbackEndpoint: 'xlServiceCxtMenuCallback' }
         ),
-      
-      refreshTable: () => 
+
+      refreshTable: () =>
         xlService.current!.refreshTable(createRange(), state.tableName),
-      
-      writeTableRows: () => 
+
+      writeTableRows: () =>
         xlService.current!.writeTableRows(
           createRange(),
           state.tableName,
           state.rowPosition,
           [['3', 'New User', 'newuser@example.com']] as any
         ),
-      
-      readTableRows: () => 
+
+      readTableRows: () =>
         xlService.current!.readTableRows(
           createRange(),
           state.tableName,
           state.fromRow,
           state.rowsToRead
         ),
-      
-      updateTableColumns: () => 
+
+      updateTableColumns: () =>
         xlService.current!.updateTableColumns(
           createRange(),
           state.tableName,
-          [{ OldName: 'Email', Name: 'EmailAddress', Position: null, Op: 'Rename' as const }]
+          [{ oldName: 'Email', name: 'EmailAddress', position: null, op: 'Rename' as const }]
         ),
-      
-      describeTableColumns: () => 
+
+      describeTableColumns: () =>
         xlService.current!.describeTableColumns(createRange(), state.tableName),
 
       // Menu Operations
-      createContextMenu: () => 
+      createContextMenu: () =>
         xlService.current!.createContextMenu(
           state.contextMenuCaption,
           ['io', 'actions'],
           createRange(),
           (origin, subscriptionId, ...props) => addLog('info', 'XL.ContextMenuCallback', 'Context menu clicked', { origin, subscriptionId, props })
         ),
-      
-      createContextMenuRaw: () => 
+
+      createContextMenuRaw: () =>
         xlService.current!.createContextMenuRaw(
           state.contextMenuCaption,
           ['io', 'actions'],
           createRange(),
           { callbackEndpoint: 'xlServiceCxtMenuCallback' }
         ),
-      
-      destroyContextMenu: () => 
+
+      destroyContextMenu: () =>
         xlService.current!.destroyContextMenu(state.menuId),
-      
-      createRibbonMenu: () => 
+
+      createRibbonMenu: () =>
         xlService.current!.createDynamicRibbonMenu(
           state.ribbonMenuCaption,
           createRange(),
           (origin, subscriptionId, ...props) => addLog('info', 'XL.RibbonMenuCallback', 'Ribbon menu clicked', { origin, subscriptionId, props })
         ),
-      
-      createRibbonMenuRaw: () => 
+
+      createRibbonMenuRaw: () =>
         xlService.current!.createDynamicRibbonMenuRaw(
           state.ribbonMenuCaption,
           createRange(),
           { callbackEndpoint: 'xlServiceCxtMenuCallback' }
         ),
-      
-      destroyRibbonMenu: () => 
+
+      destroyRibbonMenu: () =>
         xlService.current!.destroyRibbonMenu(state.menuId),
 
       // Styling & Comments
-      writeComment: () => 
+      writeComment: () =>
         xlService.current!.writeComment(createRange(), state.commentText),
-      
-      clearComments: () => 
+
+      clearComments: () =>
         xlService.current!.clearComments(createRange()),
-      
-      clearContents: () => 
+
+      clearContents: () =>
         xlService.current!.clearContents(createRange()),
-      
-      applyStyles: () => 
+
+      applyStyles: () =>
         xlService.current!.applyStyles(createRange(), state.backgroundColor, state.foregroundColor)
     };
   }, []);

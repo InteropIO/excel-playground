@@ -27,9 +27,9 @@ export function ExcelSection({
 
   return (
     <div className="space-y-8">
-      <ExcelConfig 
-        state={state} 
-        onStateChange={onStateChange} 
+      <ExcelConfig
+        state={state}
+        onStateChange={onStateChange}
       />
 
       {/* Excel Code Examples by Category */}

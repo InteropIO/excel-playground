@@ -103,8 +103,8 @@ function App() {
     'Read/Write': [
       () => executeWithLogging('XL.Read', xlOps.readRange, { workbook: excelState.workbookName, worksheet: excelState.worksheetName, range: excelState.rangeValue }),
       () => executeWithLogging('XL.Write', xlOps.writeRange, { workbook: excelState.workbookName, worksheet: excelState.worksheetName, range: excelState.rangeValue, value: excelState.cellValue }),
-      () => executeWithLogging('XL.ReadXlRef', xlOps.readXlRef, { reference: excelState.xlReference }),
-      () => executeWithLogging('XL.WriteXlRef', xlOps.writeXlRef, { reference: excelState.xlReference, value: excelState.cellValue })
+      () => executeWithLogging('XL.ReadXlRef', xlOps.readRef, { reference: excelState.xlReference }),
+      () => executeWithLogging('XL.WriteXlRef', xlOps.writeRef, { reference: excelState.xlReference, value: excelState.cellValue })
     ],
     'Subscriptions': [
       () => executeWithLogging('XL.Subscribe', xlOps.subscribeToRange, { range: excelState.rangeValue }),
@@ -117,7 +117,7 @@ function App() {
       () => executeWithLogging('XL.RefreshTable', xlOps.refreshTable, { range: excelState.rangeValue, tableName: excelState.tableName }),
       () => executeWithLogging('XL.WriteTableRows', xlOps.writeTableRows, { tableName: excelState.tableName, rowPosition: excelState.rowPosition, data: [['3', 'New User', 'newuser@example.com']] }),
       () => executeWithLogging('XL.ReadTableRows', xlOps.readTableRows, { tableName: excelState.tableName, fromRow: excelState.fromRow, rowsToRead: excelState.rowsToRead }),
-      () => executeWithLogging('XL.UpdateTableColumns', xlOps.updateTableColumns, { tableName: excelState.tableName, columnOps: [{ OldName: 'Email', Name: 'EmailAddress', Position: null, Op: 'Rename' }] }),
+      () => executeWithLogging('XL.UpdateTableColumns', xlOps.updateTableColumns, { tableName: excelState.tableName, columnOps: [{ oldName: 'Email', name: 'EmailAddress', position: null, op: 'Rename' }] }),
       () => executeWithLogging('XL.DescribeTableColumns', xlOps.describeTableColumns, { tableName: excelState.tableName })
     ],
     'Menus': [
@@ -224,10 +224,10 @@ function App() {
 
           {/* Activity Log */}
           <div className="sticky top-4 self-start z-10">
-            <ActivityLog 
-              logs={logs} 
-              isLoading={isLoading} 
-              onClearLogs={clearLogs} 
+            <ActivityLog
+              logs={logs}
+              isLoading={isLoading}
+              onClearLogs={clearLogs}
             />
           </div>
         </div>

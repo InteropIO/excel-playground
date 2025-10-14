@@ -12,37 +12,39 @@ dataSource = {
         [null, "John Doe", "johndoe@example.com"],
         [null, "Jane Smith", "janesmith@example.com"],
         [null, "Sam Wilson", "samwilson@example.com"],
-    ],
+    ]
 };
-await glueDBService.init(dataSource);
-xlService.createLinkedTable({workbook: 'Book3', worksheet: 'Sheet1', range: 'C16', forceCreate: true}, dataSource, undefined).then(console.info)
+await ioConnectDBService.init(dataSource);
+xlService.createLinkedTable({workbook: "Book3", worksheet: "Sheet1", range: "C16", forceCreate: true}, dataSource, undefined).then(console.info);
 
 // loading
-glueDBService.init({name: "UserTable",
-    file: 'interop.io/io.Connect Desktop/UserData/DEMO-INTEROP.IO/io.db'}).then(console.info)
+ioConnectDBService.init({name: "UserTable",
+    file: "interop.io/io.Connect Desktop/UserData/DEMO-INTEROP.IO/io.db"}).then(console.info);
 
-// inserting 
+// inserting
 dataSource.data = [[null, "Mol Gad", "molgad@example.com"]]
-glueDBService.insertData(dataSource).then(console.info)
+ioConnectDBService.insertData(dataSource).then(console.info);
 
 // query
-await glueDBService.executeQuery(dataSource, 'select * from UserTable')
+await ioConnectDBService.executeQuery(dataSource, "select * from UserTable");
 
 // create context menu for any sheet, which works for A1:B5
-xlService.createContextMenu("send", ["io","actions"], {range: "A1:B5"}, console.info)
+xlService.createContextMenu("send", ["io","actions"], {range: "A1:B5"}, console.info);
 
 // create dynamic ribbon menu - add in a dropdown that can be executed from the ribbon
-xlService.createDynamicRibbonMenu('Another', {range: 'A1:B10'}, console.info)
+xlService.createDynamicRibbonMenu("Another", {range: "A1:B10"}, console.info);
 */
 
-interface TableColumnOp {
-    OldName: string;
-    Name: string;
-    Position: number | null;
-    Op: 'Add' | 'Delete' | 'Rename' | 'Update';
+export type TableColumnOperation = "Add" | "Delete" | "Rename" | "Update";
+
+export interface TableColumnOperationDescriptor {
+    oldName: string;
+    name: string;
+    position: number | null;
+    op: TableColumnOperation;
 }
 
-export enum XlRibbonObjectType {
+export enum XLRibbonObjectType {
     Button = "Button",
     DynamicMenu = "DynamicMenu",
     Separator = "Separator",
@@ -50,22 +52,20 @@ export enum XlRibbonObjectType {
     Tab = "Tab"
 }
 
-export interface XlRibbonObject {
+export interface XLRibbonObject {
     label?: string;
     image?: string;
     size?: string;
     tag?: string;
     callback?: SubscriptionInfo;
-    type: XlRibbonObjectType;
-    controls?: XlRibbonObject[];
-
+    type: XLRibbonObjectType;
+    controls?: XLRibbonObject[];
     id?: string;
-
     screenTip?: string;
     superTip?: string;
 }
 
-export interface ExcelServiceResult {
+export interface XLServiceResult {
     success?: boolean;
     message?: string;
 
@@ -97,7 +97,7 @@ export interface ExcelServiceResult {
     activeWindow?: string;
 
     // Ribbon properties
-    customTabs?: XlRibbonObject[];
+    customTabs?: XLRibbonObject[];
     customRibbonDataLocation?: string;
 
     // Data properties
@@ -111,21 +111,21 @@ export interface TableColumnInfo {
 }
 
 
-enum LifetimeType {
+export enum LifetimeType {
     None = "None",
-    GlueInstance = "GlueInstance",
+    IOConnectInstance = "GlueInstance",
     Forever = "Forever",
     ExcelSession = "ExcelSession"
 }
 
-interface CTPDescriptor {
+export interface CTPDescriptor {
     id: string;
     title: string;
     visible?: boolean;
     ui: UIDescriptor;
 }
 
-interface UIDescriptor {
+export interface UIDescriptor {
     type: UIType;
     id?: string;
     text?: string;
@@ -141,20 +141,20 @@ interface UIDescriptor {
 
 export type Thickness = { left: number; top: number; right: number; bottom: number };
 
-export type UIType = 'Panel' | 'Label' | 'TextBox' | 'Button' | 'ScrollBox' | 'Border';
+export type UIType = "Panel" | "Label" | "TextBox" | "Button" | "ScrollBox" | "Border";
 
-export type UIHorizontalAlignment = 'Left' | 'Center' | 'Right' | 'Stretch';
-export type UIVerticalAlignment = 'Top' | 'Center' | 'Bottom' | 'Stretch';
+export type UIHorizontalAlignment = "Left" | "Center" | "Right" | "Stretch";
+export type UIVerticalAlignment = "Top" | "Center" | "Bottom" | "Stretch";
 
 export interface CallbackInfo {
     callbackEndpoint: string;
     callbackInstance?: string;
     callbackApp?: string;
     callbackId?: string;
-    targetType?: 'All' | 'Any';
+    targetType?: "All" | "Any";
 }
 
-interface SubscriptionInfo {
+export interface SubscriptionInfo {
     callbackEndpoint?: string;
     callbackInstance?: string;
     callbackApp?: string;
@@ -207,18 +207,18 @@ export interface Column {
     defaultValue?: any;
 }
 
-export enum XlSaveConflictResolution {
-    xlUserResolution = "xlUserResolution",
-    xlLocalSessionChanges = "xlLocalSessionChanges",
-    xlOtherSessionChanges = "xlOtherSessionChanges"
+export enum XLSaveConflictResolution {
+    UserResolution = "xlUserResolution",
+    LocalSessionChanges = "xlLocalSessionChanges",
+    OtherSessionChanges = "xlOtherSessionChanges"
 }
 
-export type XlCallback = (origin: any, ...props: any[]) => void;
+export type XLCallback = (origin: any, ...props: any[]) => void;
 export type MenuArgs = { returned: { menu?: any; menuId?: string } };
 export type ArgsType = { returned: any };
 export type TableArgs = { returned: { subscriptionId?: string } };
 
-export class GlueDBService {
+export class IOConnectDBService {
     private io: any;
     private methodNs: string;
 
@@ -263,14 +263,14 @@ export class GlueDBService {
     }
 }
 
-export class GlueExcelService {
+export class IOConnectXLService {
     private io: any;
     private methodNs: string;
-    private callbackMap: Map<string, XlCallback>;
+    private callbackMap: Map<string, XLCallback>;
 
-    private readonly xlServiceCallback = 'xlServiceCxtMenuCallback';
+    private readonly xlServiceCallback = "xlServiceCxtMenuCallback";
 
-    constructor(ioInstance: any, methodNs: string = 'T42.XL.') {
+    constructor(ioInstance: any, methodNs: string = "IO.XL.") {
         this.io = ioInstance;
         this.methodNs = methodNs;
         this.callbackMap = new Map();
@@ -280,54 +280,77 @@ export class GlueExcelService {
             const callback = this.callbackMap.get(subscriptionId);
             if (callback) {
                 callback(args);
+            } else {
+                // TODO: Choose a proper warning mechanism.
+                console.warn("Missing callback.")
             }
         });
     }
 
-    createWorkbook(workbookFile: string, worksheet: string, saveConflictResolution: XlSaveConflictResolution = XlSaveConflictResolution.xlUserResolution): Promise<object> {
+    createWorkbook(workbookFile: string, worksheet: string, saveConflictResolution: XLSaveConflictResolution = XLSaveConflictResolution.UserResolution): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}CreateWorkbook`, { workbookFile, worksheet, saveConflictResolution })
             .then((args: ArgsType) => args.returned);
     }
 
-    subscribeDeltas(range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<object> {
+    subscribeDeltasRaw(range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}SubscribeDeltas`, { range, subscriptionInfo })
             .then((args: ArgsType) => args.returned);
     }
 
-    subscribeRaw(range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<object> {
+    subscribeDeltas(rangeInfo: RangeInfo, callback: XLCallback): Promise<XLServiceResult> {
+        return this.subscribeDeltasRaw(rangeInfo, {
+            callbackEndpoint: this.xlServiceCallback
+        }).then((returned: any) => {
+            const subscriptionId = returned.subscriptionId;
+            if (subscriptionId) {
+                this.callbackMap.set(subscriptionId, callback);
+            } else {
+                // TODO: Choose a proper warning mechanism.
+                console.warn("No subscription ID.")
+            }
+
+            return returned;
+        });
+    }
+
+    subscribeRaw(range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}Subscribe`, { range, subscriptionInfo })
             .then((args: ArgsType) => args.returned);
     }
 
-    subscribe(rangeInfo: RangeInfo, callback: XlCallback): Promise<object> {
+    subscribe(rangeInfo: RangeInfo, callback: XLCallback): Promise<XLServiceResult> {
         return this.subscribeRaw(rangeInfo, {
             callbackEndpoint: this.xlServiceCallback
         }).then((returned: any) => {
             const subscriptionId = returned.subscriptionId;
             if (subscriptionId) {
                 this.callbackMap.set(subscriptionId, callback);
+            } else {
+                // TODO: Choose a proper warning mechanism.
+                console.warn("No subscription ID.")
             }
+
             return returned;
         });
     }
 
-    destroySubscription(subscriptionId: string): Promise<object> {
+    destroySubscription(subscriptionId: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}DestroySubscription`, { subscriptionId })
             .then((args: ArgsType) => args.returned);
     }
 
-    read(range: RangeInfo): Promise<object> {
+    read(range: RangeInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}Read`, { range })
             .then((args: ArgsType) => args.returned);
     }
 
-    write(range: RangeInfo, value: object): Promise<object> {
+    write(range: RangeInfo, value: object): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}Write`, { range, value })
             .then((args: ArgsType) => args.returned);
     }
 
     createTable(range: RangeInfo, tableName: string, tableStyle: string, columns: string[], value: object[][],
-        callback: XlCallback): Promise<object> {
+        callback: XLCallback): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}CreateTable`, {
             range, tableName, tableStyle, columns, value, subscriptionInfo: {
                 callbackEndpoint: this.xlServiceCallback
@@ -342,22 +365,22 @@ export class GlueExcelService {
             });
     }
 
-    createLinkedTable(range: RangeInfo, dataSource: DataSource, subscriptionInfo: SubscriptionInfo): Promise<object> {
+    createLinkedTable(range: RangeInfo, dataSource: DataSource, subscriptionInfo: SubscriptionInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}CreateLinkedTable`, { range, dataSource, subscriptionInfo })
             .then((args: any) => args.returned);
     }
 
-    refreshTable(range: RangeInfo, tableName: string): Promise<object> {
+    refreshTable(range: RangeInfo, tableName: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}RefreshTable`, { range, tableName })
             .then((args: ArgsType) => args.returned);
     }
 
-    writeTableRows(range: RangeInfo, tableName: string, rowPosition: number | null, value: object[][]): Promise<object> {
+    writeTableRows(range: RangeInfo, tableName: string, rowPosition: number | null, value: object[][]): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}WriteTableRows`, { range, tableName, rowPosition, value })
             .then((args: ArgsType) => args.returned);
     }
 
-    readTableRows(range: RangeInfo, tableName: string, fromRow: number, rowsToRead?: number): Promise<object> {
+    readTableRows(range: RangeInfo, tableName: string, fromRow: number, rowsToRead?: number): Promise<XLServiceResult> {
 
         //TODO: Default fromRow to 1
         //TODO for stas check rowsToRead against the table size
@@ -365,72 +388,72 @@ export class GlueExcelService {
             .then((args: ArgsType) => args.returned);
     }
 
-    updateTableColumns(range: RangeInfo, tableName: string, columnOps: TableColumnOp[]): Promise<object> {
+    updateTableColumns(range: RangeInfo, tableName: string, columnOps: TableColumnOperationDescriptor[]): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}UpdateTableColumns`, { range, tableName, columnOps })
             .then((args: ArgsType) => args.returned);
     }
 
-    describeTableColumns(range: RangeInfo, tableName: string): Promise<object> {
+    describeTableColumns(range: RangeInfo, tableName: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}DescribeTableColumns`, { range, tableName })
             .then((args: ArgsType) => args.returned);
     }
 
-    readXlRef(reference: string): Promise<object> {
+    readRef(reference: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}ReadXlRef`, { reference })
             .then((args: ArgsType) => args.returned);
     }
 
-    writeXlRef(reference: string, value: object): Promise<object> {
+    writeRef(reference: string, value: object): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}WriteXlRef`, { reference, value })
             .then((args: ArgsType) => args.returned);
     }
 
-    saveAs(range: RangeInfo, fileName: string): Promise<object> {
+    saveAs(range: RangeInfo, fileName: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}SaveAs`, { range, fileName })
             .then((args: ArgsType) => args.returned);
     }
 
-    openWorkbook(fileName: string): Promise<object> {
+    openWorkbook(fileName: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}OpenWorkbook`, { fileName })
             .then((args: ArgsType) => args.returned);
     }
 
-    createContextMenuRaw(caption: string, menuPath: string[], range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<object> {
+    createContextMenuRaw(caption: string, menuPath: string[], range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}CreateContextMenu`, { caption, menuPath, range, subscriptionInfo })
             .then((args: ArgsType) => args.returned);
     }
 
-    destroyContextMenuRaw(menuId: string): Promise<object> {
+    destroyContextMenuRaw(menuId: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}DestroyContextMenu`, { menuId })
             .then((args: ArgsType) => args.returned);
     }
 
-    writeComment(range: RangeInfo, comment: string): Promise<object> {
+    writeComment(range: RangeInfo, comment: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}WriteComment`, { range, comment })
             .then((args: ArgsType) => args.returned);
     }
 
-    clearComments(range: RangeInfo): Promise<object> {
+    clearComments(range: RangeInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}ClearComments`, { range })
             .then((args: ArgsType) => args.returned);
     }
 
-    clearContents(range: RangeInfo): Promise<object> {
+    clearContents(range: RangeInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}ClearContents`, { range })
             .then((args: ArgsType) => args.returned);
     }
 
-    applyStyles(range: RangeInfo, backgroundColor: string, foregroundColor: string): Promise<object> {
+    applyStyles(range: RangeInfo, backgroundColor: string, foregroundColor: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}ApplyStyles`, { range, backgroundColor, foregroundColor })
             .then((args: ArgsType) => args.returned);
     }
 
-    setRangeFormat(range: RangeInfo): Promise<object> {
+    setRangeFormat(range: RangeInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}SetRangeFormat`, { range })
             .then((args: ArgsType) => args.returned);
     }
 
-    createDynamicRibbonMenuRaw(caption: string, range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<object> {
+    createDynamicRibbonMenuRaw(caption: string, range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}CreateDynamicRibbonMenu`, { caption, range, subscriptionInfo })
             .then((args: ArgsType) => args.returned);
     }
@@ -439,7 +462,7 @@ export class GlueExcelService {
         range: RangeInfo,
         ctpDescriptor: CTPDescriptor,
         subscriptionInfo: SubscriptionInfo
-    ): Promise<any> {
+    ): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}CreateOrUpdateCTP`, {
             range,
             ctpDescriptor,
@@ -450,8 +473,8 @@ export class GlueExcelService {
     createOrUpdateCTP(
         range: RangeInfo,
         ctpDescriptor: CTPDescriptor,
-        callback: XlCallback
-    ): Promise<object> {
+        callback: XLCallback
+    ): Promise<XLServiceResult> {
         const subscriptionInfo: SubscriptionInfo = {
             callbackEndpoint: this.xlServiceCallback,
             callbackId: ctpDescriptor.id
@@ -482,8 +505,8 @@ export class GlueExcelService {
     createDynamicRibbonMenu(
         caption: string,
         range: RangeInfo,
-        callback: XlCallback,
-    ): Promise<object> {
+        callback: XLCallback,
+    ): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}CreateDynamicRibbonMenu`, {
             caption, range, subscriptionInfo: {
                 callbackEndpoint: this.xlServiceCallback
@@ -494,21 +517,21 @@ export class GlueExcelService {
                 if (menuId) {
                     this.callbackMap.set(menuId, callback);
                 }
-                return args.returned.menu;
+                return args.returned;
             });
     }
 
-    destroyRibbonMenuRaw(menuId: string): Promise<object> {
+    destroyRibbonMenuRaw(menuId: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}DestroyRibbonMenu`, { menuId })
             .then((args: ArgsType) => args.returned);
     }
 
-    destroyRibbonMenu(menuId: string): Promise<object> {
+    destroyRibbonMenu(menuId: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}DestroyRibbonMenu`, { menuId })
             .then((args: MenuArgs) => {
                 // Remove the callback from the map when menu is destroyed
                 this.callbackMap.delete(menuId);
-                return args.returned.menu;
+                return args.returned;
             });
     }
 
@@ -516,8 +539,8 @@ export class GlueExcelService {
         caption: string,
         menuPath: string[],
         range: RangeInfo,
-        callback: XlCallback,
-    ): Promise<object> {
+        callback: XLCallback,
+    ): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}CreateContextMenu`, {
             caption, menuPath, range, subscriptionInfo: {
                 callbackEndpoint: this.xlServiceCallback
@@ -528,20 +551,20 @@ export class GlueExcelService {
                 if (menuId) {
                     this.callbackMap.set(menuId, callback);
                 }
-                return args.returned.menu;
+                return args.returned;
             });
     }
 
-    destroyContextMenu(menuId: string): Promise<object> {
+    destroyContextMenu(menuId: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}DestroyContextMenu`, { menuId })
             .then((args: MenuArgs) => {
                 // Remove the callback from the map when menu is destroyed
                 this.callbackMap.delete(menuId);
-                return args.returned.menu;
+                return args.returned;
             });
     }
 
-    activate(range?: RangeInfo): Promise<object> {
+    activate(range?: RangeInfo): Promise<XLServiceResult> {
         return this.io.interop
             .invoke(`${this.methodNs}Activate`, { range })
             .then((args: { returned: { result?: any } }) => args.returned);
