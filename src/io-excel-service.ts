@@ -154,13 +154,8 @@ export interface CallbackInfo {
     targetType?: "All" | "Any";
 }
 
-export interface SubscriptionInfo {
-    callbackEndpoint?: string;
-    callbackInstance?: string;
-    callbackApp?: string;
-    targetType?: string; // Optional, default handled externally
-    callbackId?: string;
-    lifetime?: LifetimeType; // Optional, default handled externally
+export interface SubscriptionInfo extends CallbackInfo {
+    lifetime?: LifetimeType;
 }
 
 export type DataOrientation = "Horizontal" | "Vertical";
