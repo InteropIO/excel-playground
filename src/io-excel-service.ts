@@ -660,8 +660,8 @@ export class IOConnectXLService {
             .then((args: ArgsType) => args.returned);
     }
 
-    getActiveContext(): Promise<XLServiceResult> {
-        return this.io.interop.invoke(`${this.methodNs}GetActiveContext`, {})
+    getActiveContext(selectionLimit: number = 1): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}GetActiveContext`, { selectionLimit })
             .then((args: ArgsType) => args.returned);
     }
 
