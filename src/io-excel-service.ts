@@ -203,6 +203,15 @@ export interface Column {
     defaultValue?: any;
 }
 
+export interface SearchProviderDescriptor {
+    name: string;
+    types?: string[];
+    prefix?: string;
+    idField?: number;
+    displayField?: number;
+    descriptionField?: number;
+}
+
 export enum XLSaveConflictResolution {
     UserResolution = "xlUserResolution",
     LocalSessionChanges = "xlLocalSessionChanges",
@@ -564,5 +573,135 @@ export class IOConnectXLService {
         return this.io.interop
             .invoke(`${this.methodNs}Activate`, { range })
             .then((args: { returned: { result?: any } }) => args.returned);
+    }
+
+    registerCallbackShortcut(range: RangeInfo, shortcut: string, subscriptionInfo: SubscriptionInfo): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}RegisterCallbackShortcut`, { range, shortcut, subscriptionInfo })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    unregisterCallbackShortcut(shortcut: string): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}UnregisterCallbackShortcut`, { shortcut })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    destroyCTP(ctpDescriptor: CTPDescriptor): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}DestroyCTP`, { ctpDescriptor })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    getCTPStore(): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}GetCTPStore`, {})
+            .then((args: ArgsType) => args.returned);
+    }
+
+    merge(range: RangeInfo, across: boolean = false): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}Merge`, { range, across })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    unmerge(range: RangeInfo): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}Unmerge`, { range })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    getCustomUI(): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}GetCustomUI`, {})
+            .then((args: ArgsType) => args.returned);
+    }
+
+    linkToCSV(range: RangeInfo, csv: string): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}LinkToCSV`, { range, csv })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    registerSearchProvider(range: RangeInfo, descriptor: SearchProviderDescriptor): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}RegisterSearchProvider`, { range, descriptor })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    unregisterSearchProvider(descriptor: SearchProviderDescriptor): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}UnregisterSearchProvider`, { descriptor })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    storeRibbonSettings(app?: string): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}StoreRibbonSettings`, { app })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    storeServiceConfiguration(app?: string): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}StoreServiceConfiguration`, { app })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    createPivotTable(sourceRange: RangeInfo, destinationRange: RangeInfo, pivotName: string): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}CreatePivotTable`, { sourceRange, destinationRange, pivotName })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    runMacro(macro: string, params?: any[]): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}RunMacro`, { macro, params })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    listMacros(workbook?: string, includeGlue: boolean = false): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}ListMacros`, { workbook, includeGlue })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    listWorkbooks(): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}ListWorkbooks`, {})
+            .then((args: ArgsType) => args.returned);
+    }
+
+    listWorksheets(workbook?: string): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}ListWorksheets`, { workbook })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    getActiveContext(): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}GetActiveContext`, {})
+            .then((args: ArgsType) => args.returned);
+    }
+
+    listTables(range: RangeInfo): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}ListTables`, { range })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    deleteTableRows(range: RangeInfo, tableName: string, fromRow: number, count?: number): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}DeleteTableRows`, { range, tableName, fromRow, count })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    deleteTable(range: RangeInfo, tableName: string, preserveData: boolean = false): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}DeleteTable`, { range, tableName, preserveData })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    findReplace(range: RangeInfo, find: string, replace?: string, matchCase: boolean = false, matchEntireCell: boolean = false): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}FindReplace`, { range, find, replace, matchCase, matchEntireCell })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    renameWorksheet(range: RangeInfo, newName: string): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}RenameWorksheet`, { range, newName })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    createWorksheet(workbook?: string, worksheetName?: string): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}CreateWorksheet`, { workbook, worksheetName })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    getUsedRange(range: RangeInfo): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}GetUsedRange`, { range })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    sortRange(range: RangeInfo, sortColumn: number, descending: boolean = false, hasHeader: boolean = true): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}SortRange`, { range, sortColumn, descending, hasHeader })
+            .then((args: ArgsType) => args.returned);
     }
 }
