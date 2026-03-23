@@ -1,12 +1,17 @@
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import IODesktop from "@interopio/desktop";
+import IOBrowser from "@interopio/browser";
 import { IOConnectProvider } from "@interopio/react-hooks";
 
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
     <IOConnectProvider fallback={<h2>Loading...</h2>} settings={{
+      browser: {
+        config: {},
+        factory: IOBrowser,
+      },
       desktop: {
         config: {},
         factory: IODesktop,
