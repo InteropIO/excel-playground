@@ -243,6 +243,7 @@ const subscriptionInfo = { callbackEndpoint: 'xlServiceCxtMenuCallback' };
 await xlService.createContextMenuRaw(
   '${state.contextMenuCaption}',
   ['io', 'actions'],
+  undefined,
   range,
   subscriptionInfo
 );`
@@ -276,6 +277,7 @@ const subscriptionInfo = { callbackEndpoint: 'xlServiceCxtMenuCallback' };
 
 await xlService.createDynamicRibbonMenuRaw(
   '${state.ribbonMenuCaption}',
+  undefined,
   range,
   subscriptionInfo
 );`

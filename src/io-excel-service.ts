@@ -46,16 +46,19 @@ export interface TableColumnOperationDescriptor {
 }
 
 export enum XLRibbonObjectType {
+    Box = "Box",
     Button = "Button",
     DynamicMenu = "DynamicMenu",
     Separator = "Separator",
     Group = "Group",
+    ButtonGroup = "ButtonGroup",
     Tab = "Tab"
 }
 
 export interface XLRibbonObject {
     label?: string;
     image?: string;
+    imageMso?: string;
     size?: string;
     tag?: string;
     callback?: SubscriptionInfo;
@@ -64,6 +67,7 @@ export interface XLRibbonObject {
     id?: string;
     screenTip?: string;
     superTip?: string;
+    horizontal?: boolean;
 }
 
 export interface XLServiceResult {
@@ -104,6 +108,12 @@ export interface XLServiceResult {
     // Data properties
     data?: any;
     menu?: any;
+
+    // OLE object properties
+    oleObjects?: any[];
+
+    // Shape properties
+    shapeObjects?: any[];
 }
 
 export interface TableColumnInfo {
@@ -148,11 +158,12 @@ export type UIHorizontalAlignment = "Left" | "Center" | "Right" | "Stretch";
 export type UIVerticalAlignment = "Top" | "Center" | "Bottom" | "Stretch";
 
 export interface CallbackInfo {
+    selectionLimit?: number;
     callbackEndpoint: string;
     callbackInstance?: string;
     callbackApp?: string;
     callbackId?: string;
-    targetType?: "All" | "Any";
+    targetType?: "All" | "Any" | "Script" | "ScriptStream";
 }
 
 export interface SubscriptionInfo extends CallbackInfo {
@@ -210,6 +221,11 @@ export interface SearchProviderDescriptor {
     idField?: number;
     displayField?: number;
     descriptionField?: number;
+}
+
+export interface UdfParameterDescriptor {
+    name: string;
+    description?: string;
 }
 
 export enum XLSaveConflictResolution {
@@ -423,8 +439,8 @@ export class IOConnectXLService {
             .then((args: ArgsType) => args.returned);
     }
 
-    createContextMenuRaw(caption: string, menuPath: string[], range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<XLServiceResult> {
-        return this.io.interop.invoke(`${this.methodNs}CreateContextMenu`, { caption, menuPath, range, subscriptionInfo })
+    createContextMenuRaw(caption: string, menuPath: string[], toolTip: string | undefined, range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}CreateContextMenu`, { caption, menuPath, toolTip, range, subscriptionInfo })
             .then((args: ArgsType) => args.returned);
     }
 
@@ -458,8 +474,8 @@ export class IOConnectXLService {
             .then((args: ArgsType) => args.returned);
     }
 
-    createDynamicRibbonMenuRaw(caption: string, range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<XLServiceResult> {
-        return this.io.interop.invoke(`${this.methodNs}CreateDynamicRibbonMenu`, { caption, range, subscriptionInfo })
+    createDynamicRibbonMenuRaw(caption: string, toolTip: string | undefined, range: RangeInfo, subscriptionInfo: SubscriptionInfo): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}CreateDynamicRibbonMenu`, { caption, toolTip, range, subscriptionInfo })
             .then((args: ArgsType) => args.returned);
     }
 
@@ -702,6 +718,26 @@ export class IOConnectXLService {
 
     sortRange(range: RangeInfo, sortColumn: number, descending: boolean = false, hasHeader: boolean = true): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}SortRange`, { range, sortColumn, descending, hasHeader })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    registerUDF(udfName: string, script: string, deps: string[], imports: string[], helpers: string, parameters: UdfParameterDescriptor[]): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}RegisterUDF`, { udfName, script, deps, imports, helpers, parameters })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    getOleObjectsInfo(range: RangeInfo): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}GetOleObjectsInfo`, { range })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    updateOleObject(range: RangeInfo, oleObjectName: string, target: string, value: any): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}UpdateOleObject`, { range, oleObjectName, target, value })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    getShapesInfo(range: RangeInfo): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}GetShapesInfo`, { range })
             .then((args: ArgsType) => args.returned);
     }
 }

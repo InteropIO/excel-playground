@@ -125,6 +125,7 @@ export function useExcelOperations() {
         xlService.current!.createContextMenuRaw(
           state.contextMenuCaption,
           ['io', 'actions'],
+          undefined,
           createRange(),
           { callbackEndpoint: 'xlServiceCxtMenuCallback' }
         ),
@@ -142,6 +143,7 @@ export function useExcelOperations() {
       createRibbonMenuRaw: () =>
         xlService.current!.createDynamicRibbonMenuRaw(
           state.ribbonMenuCaption,
+          undefined,
           createRange(),
           { callbackEndpoint: 'xlServiceCxtMenuCallback' }
         ),
