@@ -36,6 +36,11 @@ xlService.createContextMenu("send", ["io","actions"], {range: "A1:B5"}, console.
 xlService.createDynamicRibbonMenu("Another", {range: "A1:B10"}, console.info);
 */
 
+import { IOConnectDesktop } from "@interopio/desktop";
+import { IOConnectBrowser } from "@interopio/browser";
+
+export type IOConnectAPI = IOConnectBrowser.API | IOConnectDesktop.API;
+
 export type TableColumnOperation = "Add" | "Delete" | "Rename" | "Update";
 
 export interface TableColumnOperationDescriptor {
@@ -144,15 +149,43 @@ export interface UIDescriptor {
     children?: UIDescriptor[];
     horizontalAlignment?: UIHorizontalAlignment;
     verticalAlignment?: UIVerticalAlignment;
-    margin?: Thickness;
+    margin?: Thickness | number;
     backColor?: string;
     foreColor?: string;
     isReadOnly?: boolean;
+    toolTip?: string;
+    minHeight?: number;
+    minWidth?: number;
+    maxHeight?: number;
+    maxWidth?: number;
+    // WebView / Image / Link
+    url?: string;
+    // Image
+    alt?: string;
+    width?: number;
+    height?: number;
+    // Dropdown
+    options?: Array<{ value: string; label?: string; selected?: boolean }>;
+    // Checkbox
+    checked?: boolean;
+    label?: string;
+    // ProgressBar
+    value?: number;
+    indeterminate?: boolean;
+    // Table
+    headers?: string[];
+    rows?: string[][];
+    // Html (raw)
+    html?: string;
+    // Panel layout
+    direction?: "vertical" | "horizontal";
+    gap?: number;
 }
 
 export type Thickness = { left: number; top: number; right: number; bottom: number };
 
-export type UIType = "Panel" | "Label" | "TextBox" | "Button" | "ScrollBox" | "Border";
+export type UIType = "Panel" | "Label" | "TextBox" | "Button" | "ScrollBox" | "Border"
+    | "WebView" | "Image" | "Link" | "Dropdown" | "Checkbox" | "ProgressBar" | "Table" | "Html";
 
 export type UIHorizontalAlignment = "Left" | "Center" | "Right" | "Stretch";
 export type UIVerticalAlignment = "Top" | "Center" | "Bottom" | "Stretch";
@@ -228,6 +261,31 @@ export interface UdfParameterDescriptor {
     description?: string;
 }
 
+export interface ButtonDefinition {
+    id: number;
+    text: string;
+}
+
+export interface ModalBoxDescriptor {
+    clsName?: string;
+    contentClsName?: string;
+    wndName?: string;
+    title?: string;
+    text?: string;
+    btnText?: string;
+    btnId?: number;
+    btnDefinitions?: ButtonDefinition[];
+    dismissDelayMs?: number;
+    clickMsg?: number;
+}
+
+export interface ModalInfo {
+    descriptors?: ModalBoxDescriptor[];
+    activateMain?: boolean;
+    timeout?: number;
+    throttle?: number;
+}
+
 export enum XLSaveConflictResolution {
     UserResolution = "xlUserResolution",
     LocalSessionChanges = "xlLocalSessionChanges",
@@ -240,10 +298,10 @@ export type ArgsType = { returned: any };
 export type TableArgs = { returned: { subscriptionId?: string } };
 
 export class IOConnectDBService {
-    private io: any;
+    private io: IOConnectAPI;
     private methodNs: string;
 
-    constructor(ioInstance: any, methodNs: string = "T42.DB.") {
+    constructor(ioInstance: IOConnectAPI, methodNs: string = "T42.DB.") {
         this.io = ioInstance;
         this.methodNs = methodNs;
     }
@@ -285,13 +343,13 @@ export class IOConnectDBService {
 }
 
 export class IOConnectXLService {
-    private io: any;
+    private io: IOConnectAPI;
     private methodNs: string;
     private callbackMap: Map<string, XLCallback>;
 
     private readonly xlServiceCallback = "xlServiceCxtMenuCallback";
 
-    constructor(ioInstance: any, methodNs: string = "IO.XL.") {
+    constructor(ioInstance: IOConnectAPI, methodNs: string = "IO.XL.") {
         this.io = ioInstance;
         this.methodNs = methodNs;
         this.callbackMap = new Map();
@@ -588,7 +646,7 @@ export class IOConnectXLService {
     activate(range?: RangeInfo): Promise<XLServiceResult> {
         return this.io.interop
             .invoke(`${this.methodNs}Activate`, { range })
-            .then((args: { returned: { result?: any } }) => args.returned);
+            .then((args: ArgsType) => args.returned);
     }
 
     registerCallbackShortcut(range: RangeInfo, shortcut: string, subscriptionInfo: SubscriptionInfo): Promise<XLServiceResult> {
@@ -701,6 +759,11 @@ export class IOConnectXLService {
             .then((args: ArgsType) => args.returned);
     }
 
+    find(range: RangeInfo, what: string, after?: string, matchCase: boolean = false, matchEntireCell: boolean = false): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}Find`, { range, what, after, matchCase, matchEntireCell })
+            .then((args: ArgsType) => args.returned);
+    }
+
     renameWorksheet(range: RangeInfo, newName: string): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}RenameWorksheet`, { range, newName })
             .then((args: ArgsType) => args.returned);
@@ -731,13 +794,33 @@ export class IOConnectXLService {
             .then((args: ArgsType) => args.returned);
     }
 
-    updateOleObject(range: RangeInfo, oleObjectName: string, target: string, value: any): Promise<XLServiceResult> {
-        return this.io.interop.invoke(`${this.methodNs}UpdateOleObject`, { range, oleObjectName, target, value })
+    updateOleObject(range: RangeInfo, oleObjectName: string, target: string, value: any, modalInfo?: ModalInfo): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}UpdateOleObject`, { range, oleObjectName, target, value, modalInfo })
             .then((args: ArgsType) => args.returned);
     }
 
     getShapesInfo(range: RangeInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}GetShapesInfo`, { range })
             .then((args: ArgsType) => args.returned);
+    }
+
+    subscribeModalInterceptorsRaw(modalInfo: ModalInfo, subscriptionInfo: SubscriptionInfo): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}SubscribeModalInterceptors`, { modalInfo, subscriptionInfo })
+            .then((args: ArgsType) => args.returned);
+    }
+
+    subscribeModalInterceptors(modalInfo: ModalInfo, callback: XLCallback): Promise<XLServiceResult> {
+        return this.subscribeModalInterceptorsRaw(modalInfo, {
+            callbackEndpoint: this.xlServiceCallback
+        }).then((returned: any) => {
+            const subscriptionId = returned.subscriptionId;
+            if (subscriptionId) {
+                this.callbackMap.set(subscriptionId, callback);
+            } else {
+                console.warn("No subscription ID.")
+            }
+
+            return returned;
+        });
     }
 }
