@@ -774,6 +774,11 @@ export class IOConnectXLService {
             .then((args: ArgsType) => args.returned);
     }
 
+    deleteWorksheet(worksheetName: string): Promise<XLServiceResult> {
+        return this.io.interop.invoke(`${this.methodNs}DeleteWorksheet`, { worksheetName })
+            .then((args: ArgsType) => args.returned);
+    }
+
     getUsedRange(range: RangeInfo): Promise<XLServiceResult> {
         return this.io.interop.invoke(`${this.methodNs}GetUsedRange`, { range })
             .then((args: ArgsType) => args.returned);
