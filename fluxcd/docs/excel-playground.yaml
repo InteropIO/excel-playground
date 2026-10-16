@@ -4,7 +4,7 @@ metadata:
   name: ${NAME}
   namespace: ${NAMESPACE}
   annotations:
-    event.toolkit.fluxcd.io/tag: '0.0.15' # {"$imagepolicy": "demos:excel-playground:tag"}
+    event.toolkit.fluxcd.io/tag: '0.0.1' # {"$imagepolicy": "demos:excel-playground:tag"}
 spec:
   interval: 5m
   timeout: 5m
@@ -44,9 +44,9 @@ spec:
       secret.reloader.stakater.com/reload: ""
     replicaCount: 1
     image:
-      repository: 389653476181.dkr.ecr.eu-central-1.amazonaws.com/${NAMESPACE}/${NAME} # {"$imagepolicy": "demos:excel-playground:name"}
+      repository: 389653476181.dkr.ecr.eu-central-1.amazonaws.com/demos/excel-playground # {"$imagepolicy": "demos:excel-playground:name"}
       pullPolicy: Always
-      tag: "0.0.15" # {"$imagepolicy": "demos:excel-playground:tag"}
+      tag: "0.0.1" # {"$imagepolicy": "demos:excel-playground:tag"}
       resources:
         limits:
           memory: "16Mi"
