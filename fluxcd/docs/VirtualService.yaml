@@ -5,7 +5,7 @@ metadata:
   namespace: ${NAMESPACE}
 spec:
   hosts:
-    - nxt-demo.interop.io
+    - ${NAME}.interop.io
   gateways:
     - istio-system/public-gateway
   http:
@@ -20,6 +20,6 @@ spec:
             prefix: /
       route:
         - destination:
-            host: nxt
+            host: ${NAME}
             port:
               number: 80

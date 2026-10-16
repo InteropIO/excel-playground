@@ -1,10 +1,10 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: nxt
+  name: ${NAME}
   namespace: ${NAMESPACE}
   annotations:
-    event.toolkit.fluxcd.io/tag: '0.0.15' # {"$imagepolicy": "demos-nxt-apps:nxt:tag"}
+    event.toolkit.fluxcd.io/tag: '0.0.15' # {"$imagepolicy": "demos:excel-playground:tag"}
 spec:
   interval: 5m
   timeout: 5m
@@ -32,7 +32,7 @@ spec:
   # valuesFrom:
   values:
     kind: Deployment
-    fullnameOverride: "nxt"
+    fullnameOverride: ${NAME}
     serviceAccount:
       create: false
     vpa:
@@ -44,9 +44,9 @@ spec:
       secret.reloader.stakater.com/reload: ""
     replicaCount: 1
     image:
-      repository: 389653476181.dkr.ecr.eu-central-1.amazonaws.com/demos-nxt-apps/nxt # {"$imagepolicy": "demos-nxt-apps:nxt:name"}
+      repository: 389653476181.dkr.ecr.eu-central-1.amazonaws.com/${NAMESPACE}/${NAME} # {"$imagepolicy": "demos:excel-playground:name"}
       pullPolicy: Always
-      tag: "0.0.15" # {"$imagepolicy": "demos-nxt-apps:nxt:tag"}
+      tag: "0.0.15" # {"$imagepolicy": "demos:excel-playground:tag"}
       resources:
         limits:
           memory: "16Mi"

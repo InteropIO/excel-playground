@@ -1,10 +1,10 @@
 apiVersion: ecr.services.k8s.aws/v1alpha1
 kind: Repository
 metadata:
-  name: nxt
+  name: excel-playground
   namespace: ${NAMESPACE}
 spec:
-  name: ${NAMESPACE}/nxt
+  name: ${NAMESPACE}/excel-playground
   encryptionConfiguration:
     encryptionType: AES256
   tags:
@@ -14,10 +14,10 @@ spec:
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageRepository
 metadata:
-  name: nxt
+  name: excel-playground
   namespace: ${NAMESPACE}
 spec:
-  image: ${ECR_REGISTRY}/${NAMESPACE}/nxt
+  image: ${ECR_REGISTRY}/${NAMESPACE}/excel-playground
   interval: 1m
   suspend: false
   timeout: 15s
@@ -26,11 +26,11 @@ spec:
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
-  name: nxt
+  name: excel-playground
   namespace: ${NAMESPACE}
 spec:
   imageRepositoryRef:
-    name: nxt
+    name: excel-playground
   policy:
     semver:
       range: ">=0.0.0"

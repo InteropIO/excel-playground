@@ -8,7 +8,7 @@ spec:
   interval: 3m
   sourceRef:
     kind: GitRepository
-    name: ${NAMESPACE}
+    name: ${NAME}
     namespace: flux-system
   git:
     checkout:
