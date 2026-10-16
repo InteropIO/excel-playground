@@ -29,7 +29,7 @@ jobs:
         run: |
           echo "REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
-      - name: Login to ECR
+      - name: Login to ECR ${{vars.CI_REGISTRY}}
         run: |
           aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin ${{vars.CI_REGISTRY}}
 
@@ -51,6 +51,6 @@ jobs:
           push: true
           build-args: |
           tags: |
-            ${{vars.CI_REGISTRY}}/${{ github.event.repository.name }}:latest
-            ${{vars.CI_REGISTRY}}/${{ github.event.repository.name }}:${{ github.event.inputs.release_version || github.event.release.tag_name }}
+            ${{vars.CI_REGISTRY}}/demos/${{ github.event.repository.name }}:latest
+            ${{vars.CI_REGISTRY}}/demos/${{ github.event.repository.name }}:${{ github.event.inputs.release_version || github.event.release.tag_name }}
           provenance: false
