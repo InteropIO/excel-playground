@@ -1,0 +1,164 @@
+name: Cleanup on Release Delete
+
+on:
+  release:
+    types: [deleted]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  cleanup_ghtag:
+    runs-on: deploy
+    steps:
+      - name: Delete GitHub tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ github.event.release.tag_name }}
+          REPO_FULL: ${{ github.repository }}
+        run: |
+          echo "============================================"
+          echo "Deleting GitHub tag: $TAG_NAME"
+          echo "============================================"
+          
+          # Deleting tag
+          if /usr/bin/gh api -X DELETE "/repos/$REPO_FULL/git/refs/tags/$TAG_NAME" 2>/dev/null; then
+            echo "✅ Deleted GitHub tag: $TAG_NAME"
+          else
+            echo "ℹ️ Tag $TAG_NAME not found or already deleted"
+          fi
+          
+  cleanup:
+    runs-on: deploy
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Set lowercase repo name
+        id: repo
+        run: |
+          echo "REPO_LOWER=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete package from GHCR with gh
+        env:
+          # COMPONENT: ${{ matrix.component }}
+          VERSION: ${{ github.event.release.tag_name }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_FULL: ${{ github.repository }}
+        run: |
+          REPO_NAME=$(echo "$REPO_FULL" | cut -d'/' -f2)
+          PACKAGE_NAME="$REPO_NAME"
+          ENCODED_NAME=$(echo "$PACKAGE_NAME" | sed 's/\//%2F/g')
+          
+          echo "============================================"
+          echo "Deleting $PACKAGE_NAME:$VERSION from GHCR..."
+          echo "============================================"
+          
+          VERSION_ID=$(/usr/bin/gh api \
+            -H "Accept: application/vnd.github.v3+json" \
+            "/orgs/${{ github.repository_owner }}/packages/container/$ENCODED_NAME/versions" \
+            --jq ".[] | select(.metadata.container.tags[]? == \"$VERSION\") | .id" 2>/dev/null || echo "")
+          
+          if [ -n "$VERSION_ID" ] && [ "$VERSION_ID" != "null" ]; then
+            echo "Found version ID: $VERSION_ID"
+            
+            /usr/bin/gh api -X DELETE \
+              -H "Accept: application/vnd.github.v3+json" \
+              "/orgs/${{ github.repository_owner }}/packages/container/$ENCODED_NAME/versions/$VERSION_ID"
+            
+            echo "✅ Deleted $PACKAGE_NAME:$VERSION"
+          else
+            echo "ℹ️ $PACKAGE_NAME:$VERSION not found"
+          fi
+
+          # 2. Delete all untagged version
+          echo "=================================================="
+          echo "Checking for untagged versions in $PACKAGE_NAME..."
+          echo "=================================================="
+          
+          UNTAGGED_IDS=$(/usr/bin/gh api \
+            -H "Accept: application/vnd.github.v3+json" \
+            "/orgs/${{ github.repository_owner }}/packages/container/$ENCODED_NAME/versions" \
+            --jq '.[] | select(.metadata.container.tags == []) | .id' 2>/dev/null || echo "")
+          
+          if [ -n "$UNTAGGED_IDS" ] && [ "$UNTAGGED_IDS" != "null" ] && [ "$UNTAGGED_IDS" != "" ]; then
+            echo "Found untagged version IDs: $UNTAGGED_IDS"
+            
+            # Deleting all untagged version
+            for UNTAGGED_ID in $UNTAGGED_IDS; do
+              echo "🗑️ Deleting untagged version ID: $UNTAGGED_ID"
+              /usr/bin/gh api -X DELETE \
+                -H "Accept: application/vnd.github.v3+json" \
+                "/orgs/${{ github.repository_owner }}/packages/container/$ENCODED_NAME/versions/$UNTAGGED_ID"
+              
+              if [ $? -eq 0 ]; then
+                echo "✅ Deleted untagged version $UNTAGGED_ID"
+              else
+                echo "❌ Failed to delete untagged version $UNTAGGED_ID"
+              fi
+            done
+          else
+            echo "ℹ️ No untagged versions found for $PACKAGE_NAME"
+          fi
+
+      - name: Login to ECR
+        run: |
+          aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin ${{vars.CI_REGISTRY}}
+
+      - name: Delete from ECR
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
+          VERSION: ${{ github.event.release.tag_name }}
+        run: |
+          # Name of the repository-то at ECR is: cloud/infrastructure, cloud/server etc.
+          ECR_REPO="$REPO_NAME"
+          
+          echo "========================================="
+          echo "Deleting $ECR_REPO:$VERSION from ECR..."
+          echo "Full URI: ${{vars.CI_REGISTRY}}/$ECR_REPO:$VERSION"
+          echo "========================================="
+          
+          # Check if the image is there
+          if aws ecr describe-images --repository-name "$ECR_REPO" \
+            --region eu-central-1 \
+            --image-ids imageTag="$VERSION" > /dev/null 2>&1; then
+            
+            echo "✅ Found $ECR_REPO:$VERSION, deleting..."
+            
+            # Delete image
+            aws ecr batch-delete-image \
+              --repository-name "$ECR_REPO" \
+              --region eu-central-1 \
+              --image-ids imageTag="$VERSION"
+            
+            echo "✅ Deleted $ECR_REPO:$VERSION from ECR"
+          else
+            echo "ℹ️ $ECR_REPO:$VERSION not found in ECR"
+          fi
+
+          # 2. Deleting untagged images
+          echo "Deleting untagged images from $ECR_REPO..."
+          
+          UNTAGGED=$(aws ecr list-images --repository-name "$ECR_REPO" \
+            --region eu-central-1 \
+            --filter "tagStatus=UNTAGGED" \
+            --query 'imageIds[*]' \
+            --output json)
+          
+          if [ "$UNTAGGED" != "[]" ] && [ -n "$UNTAGGED" ]; then
+            echo "$UNTAGGED" | jq -r '.[] | "imageDigest=\(.imageDigest)"' | \
+              xargs -r -n 1 aws ecr batch-delete-image \
+                --repository-name "$ECR_REPO" \
+                --region eu-central-1 \
+                --image-ids
+            echo "✅ Deleted untagged images"
+          else
+            echo "ℹ️ No untagged images found"
+          fi
