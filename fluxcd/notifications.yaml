@@ -1,0 +1,39 @@
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Provider
+metadata:
+  name: webhook2mail-relay
+  namespace: ${NAMESPACE}
+spec:
+  type: generic
+  address: http://mail-relay.utils.svc.cluster.local/webhook
+---
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Alert
+metadata:
+  name: alert
+  namespace: ${NAMESPACE}
+spec:
+  providerRef:
+    name: webhook2mail-relay
+  eventSeverity: info
+  eventMetadata:
+    mailfrom: "flux@interop.io"
+    mailto: ""
+  eventSources:
+    - kind: Kustomization
+      name: '*'
+    - kind: HelmRelease
+      name: '*'
+      namespace: ${NAMESPACE}
+    - kind: GitRepository
+      name: '${NAMESPACE}' # Could be added another Flux sources
+      namespace: flux-system
+    - kind: ImageRepository
+      name: '${NAMESPACE}'
+      namespace: '${NAMESPACE}'
+    # - kind: ImagePolicy
+    #   name: '*'
+    #   namespace: ${NAMESPACE}
+    # - kind: ImageUpdateAutomation
+    #   name: '*'
+    #   namespace: ${NAMESPACE}

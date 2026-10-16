@@ -1,0 +1,36 @@
+apiVersion: ecr.services.k8s.aws/v1alpha1
+kind: Repository
+metadata:
+  name: nxt
+  namespace: ${NAMESPACE}
+spec:
+  name: ${NAMESPACE}/nxt
+  encryptionConfiguration:
+    encryptionType: AES256
+  tags:
+  - key: is-encrypted
+    value: "true"
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: nxt
+  namespace: ${NAMESPACE}
+spec:
+  image: ${ECR_REGISTRY}/${NAMESPACE}/nxt
+  interval: 1m
+  suspend: false
+  timeout: 15s
+  provider: aws
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: nxt
+  namespace: ${NAMESPACE}
+spec:
+  imageRepositoryRef:
+    name: nxt
+  policy:
+    semver:
+      range: ">=0.0.0"

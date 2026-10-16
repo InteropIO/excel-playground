@@ -1,0 +1,36 @@
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageUpdateAutomation
+metadata:
+  name: excel-playground
+  namespace: ${NAMESPACE}
+spec:
+  interval: 3m
+  sourceRef:
+    kind: GitRepository
+    name: ${NAMESPACE}
+    namespace: flux-system
+  git:
+    checkout:
+      ref:
+        branch: fluxcd
+    commit:
+      author:
+        name: fluxcdbot
+        email: fluxcdbot@interop.io
+      messageTemplate: |
+        chore: update container images
+        
+        Images changed:
+        {{ range $filename, $fileChanges := .Changed.FileChanges -}}
+        {{- range $object, $changes := $fileChanges -}}
+        {{- range $_, $change := $changes -}}
+        - {{ $filename }}  {{ $change.OldValue }} -> {{ $change.NewValue }}
+        {{ end -}}
+        {{ end -}}
+        {{ end -}}
+    push:
+      branch: fluxcd
+  update:
+    strategy: Setters
+    path: ./fluxcd
