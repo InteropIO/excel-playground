@@ -1,0 +1,25 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: nxt-demo.interop.io
+  namespace: ${NAMESPACE}
+spec:
+  hosts:
+    - ${NAME}.interop.io
+  gateways:
+    - istio-system/public-gateway
+  http:
+    - match:
+        - port: 80
+      redirect:
+        scheme: https
+        port: 443
+    - match:
+        - port: 443
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: ${NAME}
+            port:
+              number: 80

@@ -1,0 +1,36 @@
+apiVersion: ecr.services.k8s.aws/v1alpha1
+kind: Repository
+metadata:
+  name: excel-playground
+  namespace: ${NAMESPACE}
+spec:
+  name: ${NAMESPACE}/excel-playground
+  encryptionConfiguration:
+    encryptionType: AES256
+  tags:
+  - key: is-encrypted
+    value: "true"
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: excel-playground
+  namespace: ${NAMESPACE}
+spec:
+  image: ${ECR_REGISTRY}/${NAMESPACE}/excel-playground
+  interval: 1m
+  suspend: false
+  timeout: 15s
+  provider: aws
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: excel-playground
+  namespace: ${NAMESPACE}
+spec:
+  imageRepositoryRef:
+    name: excel-playground
+  policy:
+    semver:
+      range: ">=0.0.0"

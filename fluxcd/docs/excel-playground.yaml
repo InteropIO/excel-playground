@@ -1,0 +1,82 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ${NAME}
+  namespace: ${NAMESPACE}
+  annotations:
+    event.toolkit.fluxcd.io/tag: '0.0.15' # {"$imagepolicy": "demos:excel-playground:tag"}
+spec:
+  interval: 5m
+  timeout: 5m
+  chart:
+    spec:
+      chart: .
+      version: '0.1.0'
+      sourceRef:
+        kind: GitRepository #<HelmRepository|GitRepository|Bucket>
+        name: basehelmchart
+        namespace: flux-system
+      interval: 10m
+  install:
+    crds: CreateReplace
+    timeout: 4m
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    timeout: 3m
+    remediation:
+      retries: 3
+    force: true
+  maxHistory: 2
+  # valuesFrom:
+  values:
+    kind: Deployment
+    fullnameOverride: ${NAME}
+    serviceAccount:
+      create: false
+    vpa:
+      enabled: false
+    # additionalLabels:
+    #   instance: IoConnect-Cloud
+    deploymentAnnotations:
+      configmap.reloader.stakater.com/reload: ""
+      secret.reloader.stakater.com/reload: ""
+    replicaCount: 1
+    image:
+      repository: 389653476181.dkr.ecr.eu-central-1.amazonaws.com/${NAMESPACE}/${NAME} # {"$imagepolicy": "demos:excel-playground:name"}
+      pullPolicy: Always
+      tag: "0.0.15" # {"$imagepolicy": "demos:excel-playground:tag"}
+      resources:
+        limits:
+          memory: "16Mi"
+        requests:
+          cpu: "20m"
+          memory: "8Mi"
+      securityContext:
+        privileged: false
+        runAsUser: 101
+        runAsGroup: 101
+        runAsNonRoot: true
+        readOnlyRootFilesystem: false
+        allowPrivilegeEscalation: false
+      ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+      env:
+      envFrom:
+    service:
+      enabled: true
+      type: NodePort
+      ports:
+        - name: http
+          targetPort: 8080
+          protocol: TCP
+          port: 80
+    nodeSelector:
+      kubernetes.io/arch: "amd64"
+      kubernetes.io/os: "linux"
+      builds: "false"
+      tests: "false"
+      github_worker: 'true'
