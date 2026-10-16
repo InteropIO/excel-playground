@@ -39,74 +39,74 @@ jobs:
         run: |
           echo "REPO_LOWER=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Login to GitHub Container Registry
+      #   uses: docker/login-action@v4
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.actor }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Delete package from GHCR with gh
-        env:
-          # COMPONENT: ${{ matrix.component }}
-          VERSION: ${{ github.event.release.tag_name }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO_FULL: ${{ github.repository }}
-        run: |
-          REPO_NAME=$(echo "$REPO_FULL" | cut -d'/' -f2)
-          PACKAGE_NAME="$REPO_NAME"
-          ENCODED_NAME=$(echo "$PACKAGE_NAME" | sed 's/\//%2F/g')
+      # - name: Delete package from GHCR with gh
+      #   env:
+      #     # COMPONENT: ${{ matrix.component }}
+      #     VERSION: ${{ github.event.release.tag_name }}
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     REPO_FULL: ${{ github.repository }}
+      #   run: |
+      #     REPO_NAME=$(echo "$REPO_FULL" | cut -d'/' -f2)
+      #     PACKAGE_NAME="$REPO_NAME"
+      #     ENCODED_NAME=$(echo "$PACKAGE_NAME" | sed 's/\//%2F/g')
           
-          echo "============================================"
-          echo "Deleting $PACKAGE_NAME:$VERSION from GHCR..."
-          echo "============================================"
+      #     echo "============================================"
+      #     echo "Deleting $PACKAGE_NAME:$VERSION from GHCR..."
+      #     echo "============================================"
           
-          VERSION_ID=$(/usr/bin/gh api \
-            -H "Accept: application/vnd.github.v3+json" \
-            "/orgs/${{ github.repository_owner }}/packages/container/$ENCODED_NAME/versions" \
-            --jq ".[] | select(.metadata.container.tags[]? == \"$VERSION\") | .id" 2>/dev/null || echo "")
+      #     VERSION_ID=$(/usr/bin/gh api \
+      #       -H "Accept: application/vnd.github.v3+json" \
+      #       "/orgs/${{ github.repository_owner }}/packages/container/$ENCODED_NAME/versions" \
+      #       --jq ".[] | select(.metadata.container.tags[]? == \"$VERSION\") | .id" 2>/dev/null || echo "")
           
-          if [ -n "$VERSION_ID" ] && [ "$VERSION_ID" != "null" ]; then
-            echo "Found version ID: $VERSION_ID"
+      #     if [ -n "$VERSION_ID" ] && [ "$VERSION_ID" != "null" ]; then
+      #       echo "Found version ID: $VERSION_ID"
             
-            /usr/bin/gh api -X DELETE \
-              -H "Accept: application/vnd.github.v3+json" \
-              "/orgs/${{ github.repository_owner }}/packages/container/$ENCODED_NAME/versions/$VERSION_ID"
+      #       /usr/bin/gh api -X DELETE \
+      #         -H "Accept: application/vnd.github.v3+json" \
+      #         "/orgs/${{ github.repository_owner }}/packages/container/$ENCODED_NAME/versions/$VERSION_ID"
             
-            echo "✅ Deleted $PACKAGE_NAME:$VERSION"
-          else
-            echo "ℹ️ $PACKAGE_NAME:$VERSION not found"
-          fi
+      #       echo "✅ Deleted $PACKAGE_NAME:$VERSION"
+      #     else
+      #       echo "ℹ️ $PACKAGE_NAME:$VERSION not found"
+      #     fi
 
-          # 2. Delete all untagged version
-          echo "=================================================="
-          echo "Checking for untagged versions in $PACKAGE_NAME..."
-          echo "=================================================="
+      #     # 2. Delete all untagged version
+      #     echo "=================================================="
+      #     echo "Checking for untagged versions in $PACKAGE_NAME..."
+      #     echo "=================================================="
           
-          UNTAGGED_IDS=$(/usr/bin/gh api \
-            -H "Accept: application/vnd.github.v3+json" \
-            "/orgs/${{ github.repository_owner }}/packages/container/$ENCODED_NAME/versions" \
-            --jq '.[] | select(.metadata.container.tags == []) | .id' 2>/dev/null || echo "")
+      #     UNTAGGED_IDS=$(/usr/bin/gh api \
+      #       -H "Accept: application/vnd.github.v3+json" \
+      #       "/orgs/${{ github.repository_owner }}/packages/container/$ENCODED_NAME/versions" \
+      #       --jq '.[] | select(.metadata.container.tags == []) | .id' 2>/dev/null || echo "")
           
-          if [ -n "$UNTAGGED_IDS" ] && [ "$UNTAGGED_IDS" != "null" ] && [ "$UNTAGGED_IDS" != "" ]; then
-            echo "Found untagged version IDs: $UNTAGGED_IDS"
+      #     if [ -n "$UNTAGGED_IDS" ] && [ "$UNTAGGED_IDS" != "null" ] && [ "$UNTAGGED_IDS" != "" ]; then
+      #       echo "Found untagged version IDs: $UNTAGGED_IDS"
             
-            # Deleting all untagged version
-            for UNTAGGED_ID in $UNTAGGED_IDS; do
-              echo "🗑️ Deleting untagged version ID: $UNTAGGED_ID"
-              /usr/bin/gh api -X DELETE \
-                -H "Accept: application/vnd.github.v3+json" \
-                "/orgs/${{ github.repository_owner }}/packages/container/$ENCODED_NAME/versions/$UNTAGGED_ID"
+      #       # Deleting all untagged version
+      #       for UNTAGGED_ID in $UNTAGGED_IDS; do
+      #         echo "🗑️ Deleting untagged version ID: $UNTAGGED_ID"
+      #         /usr/bin/gh api -X DELETE \
+      #           -H "Accept: application/vnd.github.v3+json" \
+      #           "/orgs/${{ github.repository_owner }}/packages/container/$ENCODED_NAME/versions/$UNTAGGED_ID"
               
-              if [ $? -eq 0 ]; then
-                echo "✅ Deleted untagged version $UNTAGGED_ID"
-              else
-                echo "❌ Failed to delete untagged version $UNTAGGED_ID"
-              fi
-            done
-          else
-            echo "ℹ️ No untagged versions found for $PACKAGE_NAME"
-          fi
+      #         if [ $? -eq 0 ]; then
+      #           echo "✅ Deleted untagged version $UNTAGGED_ID"
+      #         else
+      #           echo "❌ Failed to delete untagged version $UNTAGGED_ID"
+      #         fi
+      #       done
+      #     else
+      #       echo "ℹ️ No untagged versions found for $PACKAGE_NAME"
+      #     fi
 
       - name: Login to ECR
         run: |
