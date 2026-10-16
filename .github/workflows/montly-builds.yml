@@ -62,8 +62,8 @@ jobs:
           push: true
           build-args: |
           tags: |
-            ${{vars.CI_REGISTRY}}/${{ github.event.repository.name }}:latest
-            ${{vars.CI_REGISTRY}}/${{ github.event.repository.name }}:${{ steps.latest_tag.outputs.LATEST_TAG }}
+            ${{vars.CI_REGISTRY}}/demos/${{ github.event.repository.name }}:latest
+            ${{vars.CI_REGISTRY}}/demos/${{ github.event.repository.name }}:${{ steps.latest_tag.outputs.LATEST_TAG }}
           provenance: false
 
       - name: Delete untagged images from ECR (FORCE)

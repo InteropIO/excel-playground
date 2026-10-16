@@ -118,7 +118,7 @@ jobs:
           VERSION: ${{ github.event.release.tag_name }}
         run: |
           # Name of the repository-то at ECR is: cloud/infrastructure, cloud/server etc.
-          ECR_REPO="$REPO_NAME"
+          ECR_REPO="demos/$REPO_NAME"
           
           echo "========================================="
           echo "Deleting $ECR_REPO:$VERSION from ECR..."
