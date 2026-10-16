@@ -1,11 +1,10 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 metadata:
-  name: ${NAMESPACE}
+  name: ${NAME}
   namespace: ${NAMESPACE}
-# resources:
-# - namespace.yaml
-# - ImageUpdateAutomation.yaml
+resources:
+- ImageUpdateAutomation.yaml
 # - notifications.yaml
-# components:
-# - docs/
+components:
+- docs/
